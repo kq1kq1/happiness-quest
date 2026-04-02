@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#fff0f5">
+<meta name="theme-color" content="#f5fff0">
 <title>HAPPINESS QUEST</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:#fff8fc;font-family:'Noto Sans JP',sans-serif;color:#3a2a4a;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
+html,body{background:#f8fff8;font-family:'Noto Sans JP',sans-serif;color:#3a2a4a;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
 ::-webkit-scrollbar{width:4px;}
-::-webkit-scrollbar-thumb{background:#f0c0d8;border-radius:2px;}
+::-webkit-scrollbar-thumb{background:#90d8b0;border-radius:2px;}
 
 @keyframes floatA   {0%,100%{transform:translateY(0) rotate(-1.5deg)} 50%{transform:translateY(-8px) rotate(1.5deg)}}
-@keyframes glow     {0%,100%{box-shadow:0 0 10px #ff90b044} 50%{box-shadow:0 0 24px #ff90b099}}
+@keyframes glow     {0%,100%{box-shadow:0 0 10px #50c08044} 50%{box-shadow:0 0 24px #50c08099}}
 @keyframes shimmer  {0%,100%{opacity:.4} 50%{opacity:1}}
 @keyframes ticketGl {0%,100%{box-shadow:0 2px 8px #a855f733} 50%{box-shadow:0 4px 20px #a855f799}}
 @keyframes floatXP  {0%{opacity:1;transform:translate(-50%,0)} 100%{opacity:0;transform:translate(-50%,-70px)}}
@@ -31,27 +31,27 @@ html,body{background:#fff8fc;font-family:'Noto Sans JP',sans-serif;color:#3a2a4a
 @keyframes bgFloat  {0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-12px) rotate(3deg)}}
 
 #app{max-width:430px;margin:0 auto;min-height:100vh;
-  background:linear-gradient(160deg,#fff0f8 0%,#f0f4ff 50%,#f0fff8 100%);
+  background:linear-gradient(160deg,#f0fff0 0%,#eef4ff 50%,#fffff0 100%);
   padding-bottom:90px;position:relative;overflow:hidden;}
 
 /* 背景の装飾バブル */
 #app::before{content:'';position:fixed;top:-60px;right:-40px;width:200px;height:200px;
-  border-radius:50%;background:radial-gradient(circle,#ffd6ee88,transparent);pointer-events:none;z-index:0;}
+  border-radius:50%;background:radial-gradient(circle,#ffe09088,transparent);pointer-events:none;z-index:0;}
 #app::after{content:'';position:fixed;bottom:100px;left:-50px;width:180px;height:180px;
   border-radius:50%;background:radial-gradient(circle,#d6eaff88,transparent);pointer-events:none;z-index:0;}
 
-.tab-bar{display:flex;border-bottom:2px solid #f0e0f0;background:#ffffffee;
+.tab-bar{display:flex;border-bottom:2px solid #c8ecd8;background:#ffffffee;
   position:sticky;top:0;z-index:100;backdrop-filter:blur(8px);}
 .tab-btn{flex:1;padding:11px 2px;background:transparent;border:none;
-  color:#b090c0;border-bottom:3px solid transparent;font-size:10px;cursor:pointer;
+  color:#70a890;border-bottom:3px solid transparent;font-size:10px;cursor:pointer;
   font-family:'Noto Sans JP',sans-serif;transition:all .2s;-webkit-tap-highlight-color:transparent;}
-.tab-btn.active{color:#d060a0;border-bottom:3px solid #d060a0;font-weight:700;}
+.tab-btn.active{color:#e07020;border-bottom:3px solid #e07020;font-weight:700;}
 
 .modal-bg{position:fixed;inset:0;z-index:5000;background:#00000055;
   display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);}
 .floating-xp{position:fixed;top:36%;left:50%;font-family:'Nunito',sans-serif;font-size:28px;
-  font-weight:900;pointer-events:none;z-index:9999;color:#ff6090;
-  text-shadow:0 0 20px #ff90b0,0 2px 8px #ffffff;
+  font-weight:900;pointer-events:none;z-index:9999;color:#ff8020;
+  text-shadow:0 0 20px #ffa040,0 2px 8px #ffffff;
   animation:floatXP 1.5s ease-out forwards;white-space:nowrap;}
 
 .qbtn{transition:all .16s;cursor:pointer;user-select:none;}
@@ -60,7 +60,7 @@ html,body{background:#fff8fc;font-family:'Noto Sans JP',sans-serif;color:#3a2a4a
 .fbtn{transition:all .18s;cursor:pointer;user-select:none;}
 .fbtn:hover{transform:translateY(-3px) scale(1.04);}
 .fbtn:active{transform:scale(.88);}
-.card{background:#fff;border-radius:20px;box-shadow:0 4px 20px #e0b0d022;border:1.5px solid #f8e0ee;}
+.card{background:#fff;border-radius:20px;box-shadow:0 4px 20px #b0d8c022;border:1.5px solid #d8f0e0;}
 .card-green{background:#fff;border-radius:20px;box-shadow:0 4px 20px #b0d8c022;border:1.5px solid #d8f0e0;}
 .pill{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:9px;font-weight:700;}
 </style>
@@ -124,7 +124,7 @@ const MOODS=[
   {min:0,  max:19, emoji:"😴",label:"お腹すいた...",  bg:"#f0f0ff",border:"#c0c0f0",bar:"#a0a0e0"},
   {min:20, max:39, emoji:"😐",label:"普通かな",        bg:"#fff8f0",border:"#f0d8b0",bar:"#e0b060"},
   {min:40, max:59, emoji:"🙂",label:"うれしい！",      bg:"#f0fff4",border:"#90d8a0",bar:"#50c070"},
-  {min:60, max:79, emoji:"😊",label:"とっても幸せ！",  bg:"#fff0f8",border:"#f090c0",bar:"#e060a0"},
+  {min:60, max:79, emoji:"😊",label:"とっても幸せ！",  bg:"#f0f8ff",border:"#80b0e0",bar:"#4090d0"},
   {min:80, max:100,emoji:"🥰",label:"最高すぎる！！",  bg:"#fff8e0",border:"#f0c030",bar:"#f0a000"},
 ];
 
@@ -236,9 +236,9 @@ function showFoodSpeech(food){
   if(speechTimer)clearTimeout(speechTimer);
   const sp=document.createElement('div');sp.id='food-speech';
   sp.style.cssText=`position:fixed;z-index:7000;pointer-events:none;top:20%;left:50%;transform:translateX(-50%);
-    background:#fff;border:2px solid #ffb0d0;border-radius:24px;
-    padding:10px 20px;font-size:14px;color:#e05080;font-weight:700;
-    white-space:nowrap;box-shadow:0 4px 20px #ff90b044;animation:popIn .3s ease;`;
+    background:#fff;border:2px solid #ffc060;border-radius:24px;
+    padding:10px 20px;font-size:14px;color:#e07020;font-weight:700;
+    white-space:nowrap;box-shadow:0 4px 20px #ffa04044;animation:popIn .3s ease;`;
   sp.textContent=`${food.emoji} ${food.desc}`;
   document.body.appendChild(sp);speechTimer=setTimeout(()=>sp.remove(),2500);
 }
@@ -247,13 +247,13 @@ function showLevelUp(rank,gotTicket){
   const bg=document.createElement('div');
   bg.style.cssText='position:fixed;inset:0;z-index:10000;background:#ffffff88;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;';
   const tHTML=gotTicket?`<div style="margin-top:14px;padding:12px 20px;background:linear-gradient(135deg,#f0fff4,#e0f8ec);border:2px solid #60d090;border-radius:16px;"><div style="font-size:28px;">🎁</div><div style="color:#20a060;font-size:14px;font-weight:700;margin-top:4px;">1,000円チケット獲得！</div></div>`:'';
-  bg.innerHTML=`<div style="text-align:center;padding:36px 44px;background:#fff;border:3px solid #ffb0d0;border-radius:28px;box-shadow:0 8px 40px #ff90b055;max-width:300px;width:100%;animation:popIn .4s ease;">
+  bg.innerHTML=`<div style="text-align:center;padding:36px 44px;background:#fff;border:3px solid #ffc060;border-radius:28px;box-shadow:0 8px 40px #ffa04055;max-width:300px;width:100%;animation:popIn .4s ease;">
     <div style="font-size:60px;animation:moodBounce .8s ease-out;">${rank.icon}</div>
-    <div style="color:#ff6090;font-size:12px;letter-spacing:4px;margin-top:10px;font-family:'Nunito',sans-serif;font-weight:900;">LEVEL UP!</div>
+    <div style="color:#ff8020;font-size:12px;letter-spacing:4px;margin-top:10px;font-family:'Nunito',sans-serif;font-weight:900;">LEVEL UP!</div>
     <div style="color:#3a2a4a;font-size:30px;font-weight:900;margin-top:4px;font-family:'Nunito',sans-serif;">Lv.${rank.level}</div>
-    <div style="color:#a060c0;font-size:17px;margin-top:4px;font-weight:700;">「${rank.title}」</div>
+    <div style="color:#2090a0;font-size:17px;margin-top:4px;font-weight:700;">「${rank.title}」</div>
     ${tHTML}
-    <div style="color:#c0a0c0;font-size:11px;margin-top:14px;">タップで閉じる</div>
+    <div style="color:#90a890;font-size:11px;margin-top:14px;">タップで閉じる</div>
   </div>`;
   bg.onclick=()=>{bg.remove();render();};document.body.appendChild(bg);
   for(let i=0;i<16;i++){
@@ -267,13 +267,13 @@ function showLevelUp(rank,gotTicket){
 
 function showDiaryModal(quest){
   const bg=document.createElement('div');bg.className='modal-bg';
-  bg.innerHTML=`<div style="background:#fff;border:2px solid #ffb0d0;border-radius:24px;padding:24px;width:100%;max-width:360px;box-shadow:0 8px 32px #ff90b033;">
-    <div style="color:#e05080;font-weight:900;font-size:16px;margin-bottom:6px;font-family:'Nunito',sans-serif;">📖 今日の幸せ日記</div>
-    <div style="color:#c090b0;font-size:12px;margin-bottom:12px;">今日見つけた幸せを1つ書きましょう 🌸</div>
-    <textarea id="di" placeholder="例：朝の空気が気持ちよかった" style="width:100%;height:90px;background:#fff8fc;color:#3a2a4a;border:1.5px solid #f0c0d8;border-radius:12px;padding:10px 12px;font-size:14px;font-family:'Noto Sans JP',sans-serif;resize:none;outline:none;"></textarea>
+  bg.innerHTML=`<div style="background:#fff;border:2px solid #ffc060;border-radius:24px;padding:24px;width:100%;max-width:360px;box-shadow:0 8px 32px #ffa04033;">
+    <div style="color:#e07020;font-weight:900;font-size:16px;margin-bottom:6px;font-family:'Nunito',sans-serif;">📖 今日の幸せ日記</div>
+    <div style="color:#80a890;font-size:12px;margin-bottom:12px;">今日見つけた幸せを1つ書きましょう 🌸</div>
+    <textarea id="di" placeholder="例：朝の空気が気持ちよかった" style="width:100%;height:90px;background:#f8fff8;color:#3a2a4a;border:1.5px solid #a0d8b0;border-radius:12px;padding:10px 12px;font-size:14px;font-family:'Noto Sans JP',sans-serif;resize:none;outline:none;"></textarea>
     <div style="display:flex;gap:10px;margin-top:12px;">
-      <button id="dc" style="flex:1;padding:10px;background:#f8f0f8;border:1.5px solid #e0c0d8;color:#c090b0;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;">キャンセル</button>
-      <button id="ds" style="flex:2;padding:10px;background:linear-gradient(135deg,#ff80b0,#e040a0);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;box-shadow:0 4px 12px #e04090aa;">記録して XP 獲得 ✨</button>
+      <button id="dc" style="flex:1;padding:10px;background:#f0f8f0;border:1.5px solid #c0d8c0;color:#80a890;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;">キャンセル</button>
+      <button id="ds" style="flex:2;padding:10px;background:linear-gradient(135deg,#ff9030,#e06010);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;box-shadow:0 4px 12px #e07020aa;">記録して XP 獲得 ✨</button>
     </div>
   </div>`;
   document.body.appendChild(bg);
@@ -289,23 +289,23 @@ function showDiaryModal(quest){
 
 function showSetupModal(){
   const bg=document.createElement('div');bg.className='modal-bg';bg.id='setup-modal';
-  bg.innerHTML=`<div style="background:#fff;border:2px solid #ffb0d0;border-radius:24px;padding:24px;width:100%;max-width:360px;box-shadow:0 8px 32px #ff90b033;">
-    <div style="color:#e05080;font-weight:900;font-size:16px;margin-bottom:14px;font-family:'Nunito',sans-serif;">🎮 推しキャラ設定</div>
+  bg.innerHTML=`<div style="background:#fff;border:2px solid #ffc060;border-radius:24px;padding:24px;width:100%;max-width:360px;box-shadow:0 8px 32px #ffa04033;">
+    <div style="color:#e07020;font-weight:900;font-size:16px;margin-bottom:14px;font-family:'Nunito',sans-serif;">🎮 推しキャラ設定</div>
     <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px;">
-      <div id="prev-wrap" onclick="document.getElementById('ph-inp').click()" style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #ff90c0;background:#fff0f8;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:8px;box-shadow:0 4px 16px #ff90c044;">
-        ${state.charPhoto?`<img src="${state.charPhoto}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="text-align:center;color:#ff90c0;font-size:10px;"><div style="font-size:30px;">📷</div>写真を選ぶ</div>`}
+      <div id="prev-wrap" onclick="document.getElementById('ph-inp').click()" style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #40c880;background:#f0fff8;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:8px;box-shadow:0 4px 16px #40c88044;">
+        ${state.charPhoto?`<img src="${state.charPhoto}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="text-align:center;color:#30b870;font-size:10px;"><div style="font-size:30px;">📷</div>写真を選ぶ</div>`}
       </div>
       <input type="file" id="ph-inp" accept="image/*" style="display:none;" onchange="previewPhoto(this)">
-      <div style="color:#c0a0b8;font-size:10px;">タップして写真を選択</div>
+      <div style="color:#90a890;font-size:10px;">タップして写真を選択</div>
     </div>
     <div style="margin-bottom:16px;">
-      <div style="color:#c090b0;font-size:11px;margin-bottom:6px;">推しの名前</div>
+      <div style="color:#80a890;font-size:11px;margin-bottom:6px;">推しの名前</div>
       <input id="nm-inp" type="text" value="${state.charName||''}" placeholder="名前を入力" maxlength="10"
-        style="width:100%;background:#fff8fc;color:#3a2a4a;border:1.5px solid #f0c0d8;border-radius:12px;padding:10px 14px;font-size:15px;font-family:'Noto Sans JP',sans-serif;outline:none;text-align:center;font-weight:700;">
+        style="width:100%;background:#f8fff8;color:#3a2a4a;border:1.5px solid #a0d8b0;border-radius:12px;padding:10px 14px;font-size:15px;font-family:'Noto Sans JP',sans-serif;outline:none;text-align:center;font-weight:700;">
     </div>
     <div style="display:flex;gap:10px;">
-      <button onclick="document.getElementById('setup-modal').remove()" style="flex:1;padding:10px;background:#f8f0f8;border:1.5px solid #e0c0d8;color:#c090b0;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;">キャンセル</button>
-      <button onclick="saveSetup()" style="flex:2;padding:10px;background:linear-gradient(135deg,#ff80b0,#e040a0);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;box-shadow:0 4px 12px #e04090aa;">保存する ✓</button>
+      <button onclick="document.getElementById('setup-modal').remove()" style="flex:1;padding:10px;background:#f0f8f0;border:1.5px solid #c0d8c0;color:#80a890;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;">キャンセル</button>
+      <button onclick="saveSetup()" style="flex:2;padding:10px;background:linear-gradient(135deg,#ff9030,#e06010);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;box-shadow:0 4px 12px #e07020aa;">保存する ✓</button>
     </div>
   </div>`;
   document.body.appendChild(bg);
@@ -339,42 +339,42 @@ function render(){
 
   // XPバー
   const xpBar=`<div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:#b090c0;margin-bottom:3px;">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#70a890;margin-bottom:3px;">
       <span>Lv.${cur.level} ${cur.title}</span>
-      <span style="color:#e050a0;font-weight:700;">${nxt?`あと${nxt.minXP-state.totalXP}XP`:'MAX✨'}</span>
+      <span style="color:#e07020;font-weight:700;">${nxt?`あと${nxt.minXP-state.totalXP}XP`:'MAX✨'}</span>
     </div>
-    <div style="height:12px;border-radius:8px;background:#f0e8f8;border:1.5px solid #e0c8f0;overflow:hidden;position:relative;">
-      <div style="height:100%;border-radius:8px;width:${Math.min(pct,100)}%;background:linear-gradient(90deg,#e060c0,#ff80d0,#ffb0e0);box-shadow:0 0 8px #ff80d066;transition:width .6s;"></div>
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7px;color:#a060a0;font-weight:700;">${Math.round(pct)}%</div>
+    <div style="height:12px;border-radius:8px;background:#e8f4e0;border:1.5px solid #c8e8c8;overflow:hidden;position:relative;">
+      <div style="height:100%;border-radius:8px;width:${Math.min(pct,100)}%;background:linear-gradient(90deg,#30b870,#60d890,#a0f0c0);box-shadow:0 0 8px #60d89066;transition:width .6s;"></div>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7px;color:#508060;font-weight:700;">${Math.round(pct)}%</div>
     </div>
   </div>`;
 
   // 満腹ゲージ
   const fullBar=`<div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:#b090c0;margin-bottom:3px;">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#70a890;margin-bottom:3px;">
       <span>満腹度 ${mood.emoji}</span>
       <span style="color:${mood.bar};font-weight:700;">${state.fullness}%</span>
     </div>
     <div style="height:12px;border-radius:8px;background:#f8f4f0;border:1.5px solid ${mood.border};overflow:hidden;position:relative;">
       <div style="height:100%;border-radius:8px;width:${state.fullness}%;background:linear-gradient(90deg,${mood.bar}aa,${mood.bar});transition:width .6s;${state.fullness>80?'animation:fullPulse 1.5s ease-in-out infinite;':''}"></div>
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7px;color:#806080;font-weight:700;">${mood.label}</div>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7px;color:#607870;font-weight:700;">${mood.label}</div>
     </div>
   </div>`;
 
   // キャラエリア
   const aura=state.charPhoto?`<div style="position:absolute;inset:0;border-radius:50%;pointer-events:none;overflow:hidden;">
     <svg viewBox="0 0 100 100" width="100%" height="100%">
-      <circle cx="25" cy="20" r="2" fill="#ff90c0" opacity="0"><animate attributeName="opacity" values="0;.9;0" dur="2.2s" repeatCount="indefinite" begin="0s"/><animate attributeName="r" values="1;3;1" dur="2.2s" repeatCount="indefinite" begin="0s"/></circle>
+      <circle cx="25" cy="20" r="2" fill="#50d090" opacity="0"><animate attributeName="opacity" values="0;.9;0" dur="2.2s" repeatCount="indefinite" begin="0s"/><animate attributeName="r" values="1;3;1" dur="2.2s" repeatCount="indefinite" begin="0s"/></circle>
       <circle cx="75" cy="18" r="1.5" fill="#ffd060" opacity="0"><animate attributeName="opacity" values="0;.8;0" dur="1.8s" repeatCount="indefinite" begin=".8s"/></circle>
       <circle cx="82" cy="60" r="1" fill="#80d0ff" opacity="0"><animate attributeName="opacity" values="0;.7;0" dur="2.5s" repeatCount="indefinite" begin="1.3s"/></circle>
-      <circle cx="50" cy="4" r="1.5" fill="#c080ff" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite" begin=".4s"/></circle>
-      <circle cx="15" cy="58" r="1" fill="#ff80a0" opacity="0"><animate attributeName="opacity" values="0;.8;0" dur="2s" repeatCount="indefinite" begin="1.7s"/></circle>
+      <circle cx="50" cy="4" r="1.5" fill="#f0b020" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite" begin=".4s"/></circle>
+      <circle cx="15" cy="58" r="1" fill="#80d890" opacity="0"><animate attributeName="opacity" values="0;.8;0" dur="2s" repeatCount="indefinite" begin="1.7s"/></circle>
     </svg>
   </div>`:'';
 
   const photoContent=state.charPhoto
     ?`<img src="${state.charPhoto}" alt="推し" style="width:100%;height:100%;object-fit:cover;">`
-    :`<div onclick="showSetupModal()" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#ff90c0;font-size:11px;gap:5px;background:#fff0f8;"><div style="font-size:32px;">👤</div><div style="font-weight:700;">タップして設定</div></div>`;
+    :`<div onclick="showSetupModal()" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#30b870;font-size:11px;gap:5px;background:#f0fff8;"><div style="font-size:32px;">👤</div><div style="font-weight:700;">タップして設定</div></div>`;
 
   const charArea=`
   <div style="display:flex;flex-direction:column;align-items:center;padding:12px 0 6px;position:relative;" id="char-area">
@@ -387,13 +387,13 @@ function render(){
         ${photoContent}${aura}
       </div>
     </div>
-    <div style="font-size:15px;font-weight:900;color:#d040a0;margin-top:8px;font-family:'Nunito',sans-serif;">${state.charName}</div>
-    <div style="font-size:10px;color:#c0a0b8;margin-top:2px;cursor:pointer;" onclick="showSetupModal()">✏️ 編集</div>
+    <div style="font-size:15px;font-weight:900;color:#e07020;margin-top:8px;font-family:'Nunito',sans-serif;">${state.charName}</div>
+    <div style="font-size:10px;color:#90a890;margin-top:2px;cursor:pointer;" onclick="showSetupModal()">✏️ 編集</div>
   </div>`;
 
   // ── クエストタブ ──
   let questsHTML=`<div style="padding:14px;">
-    <div style="background:linear-gradient(135deg,#fff8e0,#fff0f0);border:1.5px solid #ffd0b0;border-radius:16px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+    <div style="background:linear-gradient(135deg,#fff8e0,#f0fff4);border:1.5px solid #ffd0b0;border-radius:16px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
       <span style="font-size:16px;">⚡</span>
       <span style="color:#e08030;font-size:12px;font-weight:700;">本日2倍XP: <b>${BASE_QUESTS.find(q=>q.id===dq)?.label}</b></span>
     </div>`;
@@ -404,13 +404,13 @@ function render(){
     const xpShow=Math.round(q.baseXP*(isDouble?2:1)*gm);
     const food=FOODS[q.food];
     const cardBg=isDone?'linear-gradient(135deg,#f0fff4,#e8f8f0)':'#fff';
-    const cardBorder=isDone?'#90d8a0':isDouble?'#ffb060':'#f0d8ec';
+    const cardBorder=isDone?'#90d8a0':isDouble?'#ffb060':'#d0e8d0';
     questsHTML+=`
     <div class="${isDone?'':'qbtn'}" ${isDone?'':` onclick="completeQuest('${q.id}')"`}
       style="display:flex;align-items:center;gap:12px;padding:13px 14px;margin-bottom:9px;
         background:${cardBg};border:1.5px solid ${cardBorder};border-radius:16px;
         opacity:${isDone?0.75:1};cursor:${isDone?'default':'pointer'};
-        box-shadow:0 3px 12px ${isDone?'#90d8a022':isDouble?'#ffb06033':'#e090c022'};
+        box-shadow:0 3px 12px ${isDone?'#90d8a022':isDouble?'#ffb06033':'#90d8a022'};
         ${isDouble&&!isDone?'animation:glow 2s ease-in-out infinite;':''}">
       <div style="font-size:26px;min-width:32px;text-align:center;">${q.icon}</div>
       <div style="flex:1;min-width:0;">
@@ -419,13 +419,13 @@ function render(){
           ${isDouble?`<span class="pill" style="background:#fff0d8;color:#e08030;">×2⚡</span>`:''}
           ${(q.repeatable&&cnt>0)?`<span class="pill" style="background:#e8f0ff;color:#6080e0;">${cnt}回</span>`:''}
         </div>
-        <div style="font-size:10px;color:#c0a8c0;margin-top:2px;">${q.desc}${q.unit?`（${q.unit}）`:''}</div>
-        ${food&&!isDone?`<div style="font-size:10px;color:#c0a0b8;margin-top:2px;">${food.emoji} ${food.label}がもらえる</div>`:''}
+        <div style="font-size:10px;color:#80a890;margin-top:2px;">${q.desc}${q.unit?`（${q.unit}）`:''}</div>
+        ${food&&!isDone?`<div style="font-size:10px;color:#80a890;margin-top:2px;">${food.emoji} ${food.label}がもらえる</div>`:''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
         ${isDone
           ?'<div style="font-size:22px;">✅</div>'
-          :`<div style="background:linear-gradient(135deg,#ff70b0,#d030a0);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:14px;white-space:nowrap;box-shadow:0 3px 8px #d030a066;">+${xpShow} XP</div>`}
+          :`<div style="background:linear-gradient(135deg,#ff9030,#e06010);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:14px;white-space:nowrap;box-shadow:0 3px 8px #e0701066;">+${xpShow} XP</div>`}
       </div>
     </div>`;
   }
@@ -438,37 +438,37 @@ function render(){
     <div style="display:flex;gap:14px;align-items:center;">
       <div id="feed-char" style="position:relative;width:80px;height:80px;flex-shrink:0;animation:floatA 3s ease-in-out infinite;">
         <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:2.5px solid ${mood.border};box-shadow:0 4px 16px ${mood.bar}44;">
-          ${state.charPhoto?`<img src="${state.charPhoto}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff0f8;">👤</div>`}
+          ${state.charPhoto?`<img src="${state.charPhoto}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:#f0fff8;">👤</div>`}
         </div>
         <div style="position:absolute;bottom:-4px;right:-4px;font-size:22px;animation:moodBounce 2s ease-in-out infinite;">${mood.emoji}</div>
       </div>
       <div style="flex:1;">
-        <div style="color:#d040a0;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;">${state.charName}</div>
+        <div style="color:#e07020;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;">${state.charName}</div>
         <div style="margin-top:6px;">${fullBar}</div>
-        <div style="font-size:10px;color:#c0a8c0;margin-top:5px;">通算 ${state.totalFed||0} 回ごはんをあげた 💕</div>
+        <div style="font-size:10px;color:#80a890;margin-top:5px;">通算 ${state.totalFed||0} 回ごはんをあげた 💕</div>
       </div>
     </div>
   </div>`;
 
   if(!foodEntries.length){
-    feedHTML+=`<div style="text-align:center;color:#d0b0c0;padding:40px 20px;font-size:13px;">
+    feedHTML+=`<div style="text-align:center;color:#90b890;padding:40px 20px;font-size:13px;">
       <div style="font-size:52px;margin-bottom:12px;">🍽️</div>
       <div style="font-weight:700;">クエストを達成して</div>
       <div style="margin-top:4px;">食べ物を集めよう！</div>
     </div>`;
   }else{
-    feedHTML+=`<div style="color:#d060a0;font-size:12px;font-weight:700;text-align:center;margin-bottom:12px;">タップして ${state.charName} にあげよう 🎁</div>
+    feedHTML+=`<div style="color:#e07020;font-size:12px;font-weight:700;text-align:center;margin-bottom:12px;">タップして ${state.charName} にあげよう 🎁</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">`;
     for(const [fid,cnt] of foodEntries){
       const food=FOODS[fid];if(!food)continue;
       feedHTML+=`
       <div class="fbtn" onclick="feedFood('${fid}')"
         style="padding:14px 8px 12px;border-radius:18px;text-align:center;background:#fff;
-          border:1.5px solid #f0d0e8;box-shadow:0 3px 12px #f090c022;position:relative;">
+          border:1.5px solid #c0e8d0;box-shadow:0 3px 12px #60c09022;position:relative;">
         <div style="font-size:36px;">${food.emoji}</div>
         <div style="color:#3a2a4a;font-size:11px;font-weight:700;margin-top:6px;">${food.label}</div>
         <div style="font-size:9px;color:#c0a8c0;margin-top:2px;">+${food.moodUp*8}%</div>
-        <div style="position:absolute;top:7px;right:7px;background:#ff70b0;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;box-shadow:0 2px 6px #ff70b066;">×${cnt}</div>
+        <div style="position:absolute;top:7px;right:7px;background:#ff9030;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;box-shadow:0 2px 6px #ff903066;">×${cnt}</div>
       </div>`;
     }
     feedHTML+=`</div>`;
@@ -485,12 +485,12 @@ function render(){
   }
   allEntries.sort((a,b)=>b.date.localeCompare(a.date));
   if(!allEntries.length){
-    diaryHTML+=`<div style="text-align:center;color:#d0b0c0;padding:60px 20px;font-size:13px;"><div style="font-size:44px;margin-bottom:12px;">📖</div><div style="font-weight:700;">まだ記録がありません</div><div style="margin-top:4px;font-size:12px;">クエストで最初の幸せを記録しよう</div></div>`;
+    diaryHTML+=`<div style="text-align:center;color:#90b890;padding:60px 20px;font-size:13px;"><div style="font-size:44px;margin-bottom:12px;">📖</div><div style="font-weight:700;">まだ記録がありません</div><div style="margin-top:4px;font-size:12px;">クエストで最初の幸せを記録しよう</div></div>`;
   }else{
     for(const e of allEntries){
       const d=new Date(e.date+'T00:00:00').toLocaleDateString('ja-JP',{month:'long',day:'numeric'});
       diaryHTML+=`<div class="card" style="padding:14px 16px;margin-bottom:10px;animation:fadeSlide .3s ease;">
-        <div style="font-size:10px;color:#e060a0;margin-bottom:6px;font-weight:700;">${d} 🌸</div>
+        <div style="font-size:10px;color:#e07020;margin-bottom:6px;font-weight:700;">${d} 🌸</div>
         <div style="font-size:14px;color:#3a2a4a;line-height:1.7;">${e.text}</div>
       </div>`;
     }
@@ -507,7 +507,7 @@ function render(){
     <div style="color:#90b0a0;font-size:11px;margin-top:10px;line-height:1.7;">Lv.20 ごとに 1,000円チケットを獲得。「使用する」を押して実世界で交換！</div>
   </div>`;
   const tks=state.tickets||[];
-  if(!tks.length)walletHTML+=`<div style="text-align:center;color:#d0b8c8;padding:36px 20px;font-size:12px;"><div style="font-size:44px;margin-bottom:10px;">🎁</div><div style="font-weight:700;">Lv.20 到達でチケット獲得！</div></div>`;
+  if(!tks.length)walletHTML+=`<div style="text-align:center;color:#90b890;padding:36px 20px;font-size:12px;"><div style="font-size:44px;margin-bottom:10px;">🎁</div><div style="font-weight:700;">Lv.20 到達でチケット獲得！</div></div>`;
   else for(const tk of [...tks].reverse()){
     walletHTML+=`<div style="${tk.used?'background:#f8f8f8;border:1.5px solid #e0e0e0;':'background:#f0fff8;border:1.5px solid #80e0a0;'} border-radius:16px;padding:14px;margin-bottom:10px;opacity:${tk.used?0.5:1};position:relative;overflow:hidden;box-shadow:${tk.used?'none':'0 3px 12px #80e0a033'};">
       ${!tk.used?`<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#80ff9080,transparent);animation:shimmer 2s infinite;"></div>`:''}
@@ -524,18 +524,18 @@ function render(){
   walletHTML+='</div>';
 
   // ── 称号タブ ──
-  let ranksHTML=`<div style="padding:14px;"><div style="color:#c0a0b8;font-size:11px;text-align:center;margin-bottom:12px;">Lv.20ごとに 🎁 1,000円チケット！</div>`;
+  let ranksHTML=`<div style="padding:14px;"><div style="color:#80a890;font-size:11px;text-align:center;margin-bottom:12px;">Lv.20ごとに 🎁 1,000円チケット！</div>`;
   for(const r of RANKS){
     const unl=state.totalXP>=r.minXP,isCur=cur.level===r.level,isTix=r.level%20===0;
     ranksHTML+=`<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;margin-bottom:7px;border-radius:14px;
-      background:${isCur?'linear-gradient(135deg,#fff0f8,#f8e8ff)':unl?'#fff':'#f8f8f8'};
-      border:${isCur?'2px solid #e060a0':unl?'1.5px solid #f0d8ec':'1.5px solid #e8e8e8'};
-      opacity:${unl?1:0.45};box-shadow:${isCur?'0 4px 16px #e060a033':unl?'0 2px 8px #e0c0d822':'none'};">
+      background:${isCur?'linear-gradient(135deg,#f0fff4,#e8fff0)':unl?'#fff':'#f8f8f8'};
+      border:${isCur?'2px solid #30b870':unl?'1.5px solid #c0e8d0':'1.5px solid #e8e8e8'};
+      opacity:${unl?1:0.45};box-shadow:${isCur?'0 4px 16px #30b87033':unl?'0 2px 8px #b0d8c022':'none'};">
       <div style="font-size:24px;">${unl?r.icon:'🔒'}</div>
       <div style="flex:1;">
         <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
-          <span style="font-family:'Nunito',sans-serif;font-size:11px;color:#e060a0;font-weight:700;">Lv.${r.level}</span>
-          ${isCur?`<span class="pill" style="background:#ffd0e8;color:#e040a0;">現在</span>`:''}
+          <span style="font-family:'Nunito',sans-serif;font-size:11px;color:#e07020;font-weight:700;">Lv.${r.level}</span>
+          ${isCur?`<span class="pill" style="background:#d8f0ff;color:#2080d0;">現在</span>`:''}
           ${isTix?`<span class="pill" style="background:#d8f0e8;color:#20a060;">🎁 チケット</span>`:''}
         </div>
         <div style="font-size:13px;color:${unl?'#3a2a4a':'#aaa'};font-weight:700;">「${r.title}」</div>
@@ -567,8 +567,8 @@ function render(){
   <div style="padding:18px 16px 0;position:relative;z-index:1;">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
       <div>
-        <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:#d040a0;letter-spacing:1px;">🌸 HAPPINESS QUEST</div>
-        <div style="font-size:11px;color:#c0a8c0;margin-top:2px;">${dateStr}</div>
+        <div style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:#e07020;letter-spacing:1px;">🌟 HAPPINESS QUEST</div>
+        <div style="font-size:11px;color:#70a890;margin-top:2px;">${dateStr}</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
         ${unusedTix>0?`<div onclick="switchTab('wallet')" style="background:#f0fff8;border:1.5px solid #80e0a0;border-radius:16px;padding:3px 10px;cursor:pointer;display:flex;align-items:center;gap:3px;animation:ticketGl 2s infinite;box-shadow:0 2px 8px #80e0a044;"><span style="font-size:13px;">🎁</span><span style="color:#20a060;font-size:11px;font-weight:700;">${unusedTix}</span></div>`:''}
@@ -581,8 +581,8 @@ function render(){
     <div class="card" style="padding:14px 16px;display:flex;gap:12px;align-items:center;">
       ${charArea}
       <div style="flex:1;min-width:0;padding:2px 0;">
-        <div style="color:#d040a0;font-size:15px;font-weight:900;font-family:'Nunito',sans-serif;">「${cur.title}」</div>
-        <div style="color:#c0a8c0;font-size:10px;margin-top:2px;">Lv.${curLevel} • <span style="color:#d040a0;font-weight:700;">${state.totalXP.toLocaleString()} XP</span>${gm>1?`<span style="color:#e08030;margin-left:4px;font-weight:700;">🔥×${gm}</span>`:''}</div>
+        <div style="color:#e07020;font-size:15px;font-weight:900;font-family:'Nunito',sans-serif;">「${cur.title}」</div>
+        <div style="color:#70a890;font-size:10px;margin-top:2px;">Lv.${curLevel} • <span style="color:#e07020;font-weight:700;">${state.totalXP.toLocaleString()} XP</span>${gm>1?`<span style="color:#e08030;margin-left:4px;font-weight:700;">🔥×${gm}</span>`:''}</div>
         <div style="margin-top:8px;">${xpBar}</div>
         <div style="margin-top:6px;">${fullBar}</div>
       </div>

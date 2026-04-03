@@ -152,8 +152,8 @@ const MOODS=[
   {min:80, max:100,emoji:"🥰",label:"最高すぎる！！",  bg:"#fff8e0",border:"#f0c030",bar:"#f0a000"},
 ];
 
-const load=()=>{try{const r=localStorage.getItem("hq_v4");return r?JSON.parse(r):null;}catch{return null;}};
-const save=d=>{try{localStorage.setItem("hq_v4",JSON.stringify(d));}catch{}};
+const load=()=>{try{const r=localStorage.getItem("hq_v5");return r?JSON.parse(r):null;}catch{return null;}};
+const save=d=>{try{localStorage.setItem("hq_v5",JSON.stringify(d));}catch{}};
 const today=()=>new Date().toISOString().slice(0,10);
 const dqId=k=>BASE_QUESTS[k.split("-").reduce((a,b)=>a+parseInt(b),0)%BASE_QUESTS.length].id;
 const getLevel=xp=>{const level=getLevelNum(xp);const td=getTitleData(level);return{level,title:td.title,icon:td.icon,minXP:LEVEL_XP[level]};};

@@ -284,17 +284,18 @@ let state=(()=>{
   const s=load();
   if(s){
     if(!s.foodInventory)s.foodInventory={};
-    if(!s.fullness)s.fullness=30;
     if(!s.charName)s.charName="推し";
     if(!s.chars){s.chars=[{name:s.charName||"推し",photo:s.charPhoto||null}];s.activeCharIdx=0;}
+    // 満腹度をキャラごとに移行
+    s.chars.forEach((c,i)=>{if(c.fullness===undefined)c.fullness=i===0?(s.fullness||30):30;});
     if(!s.loginStreak)s.loginStreak=0;
     if(!s.lastStreakGachaMilestone)s.lastStreakGachaMilestone=0;
     if(!s.boostTickets)s.boostTickets=[];
     return s;
   }
   return{totalXP:0,loginDays:[],questLog:{},diaryEntries:{},repeatCounts:{},tickets:[],
-    chars:[{name:"推し",photo:null}],activeCharIdx:0,charName:"推し",charPhoto:null,
-    foodInventory:{},fullness:30,totalFed:0,
+    chars:[{name:"推し",photo:null,fullness:30}],activeCharIdx:0,charName:"推し",charPhoto:null,
+    foodInventory:{},totalFed:0,
     loginStreak:0,lastStreakGachaMilestone:0,weeklyQuest:null,
     questBoost:null,xpBoost:null,boostTickets:[]};
 })();
@@ -306,11 +307,13 @@ let confirmTicketId=null;
 
 (()=>{const t=today();if(!state.loginDays.includes(t)){state.loginDays.push(t);save(state);}})();
 (()=>{
-  // 満腹度：時間ベースで減少（3.2%/時間）
+  // 満腹度：時間ベースで減少（1.92%/時間 ÷ キャラ数）
   const now=Date.now();
   if(state.lastOpenedAt){
     const hoursElapsed=(now-state.lastOpenedAt)/3600000;
-    state.fullness=Math.max(0,state.fullness-hoursElapsed*3.2);
+    const nc=Math.max(1,charCount(getLevel(state.totalXP).level));
+    const ratePerChar=1.92/nc;
+    state.chars.forEach(c=>{c.fullness=Math.max(0,(c.fullness||30)-hoursElapsed*ratePerChar);});
   }
   state.lastOpenedAt=now;save(state);
 })();
@@ -391,9 +394,10 @@ function feedFood(foodId){
   const cnt=state.foodInventory[foodId]||0;if(cnt<=0)return;
   state.foodInventory[foodId]=cnt-1;
   if(state.foodInventory[foodId]===0)delete state.foodInventory[foodId];
-  const prevIdx=MOODS.indexOf(getMood(state.fullness));
-  state.fullness=Math.min(100,state.fullness+food.moodUp*5);
-  const newIdx=MOODS.indexOf(getMood(state.fullness));
+  const char=state.chars[state.activeCharIdx||0];
+  const prevIdx=MOODS.indexOf(getMood(char.fullness||0));
+  char.fullness=Math.min(100,(char.fullness||0)+food.moodUp*5);
+  const newIdx=MOODS.indexOf(getMood(char.fullness));
   state.totalFed=(state.totalFed||0)+1;save(state);
   showFeedEffect(food,newIdx>prevIdx);
 }
@@ -673,7 +677,9 @@ function render(){
   const cur=getLevel(state.totalXP),nxt=getNextRank(state.totalXP);
   const pct=nxt?((state.totalXP-cur.minXP)/(nxt.minXP-cur.minXP))*100:100;
   const lc=state.loginDays.length,gm=(lc>0&&lc%10===0)?2:1;
-  const curLevel=cur.level,mood=getMood(state.fullness);
+  const activeCharIdx=Math.min(state.activeCharIdx||0,state.chars.length-1);
+  const activeChar=state.chars[activeCharIdx];
+  const curLevel=cur.level,mood=getMood(activeChar.fullness||0);
   const unusedTix=(state.tickets||[]).filter(x=>!x.used).length;
   const dateStr=new Date().toLocaleDateString('ja-JP',{month:'long',day:'numeric',weekday:'short'});
   const invTotal=Object.values(state.foodInventory||{}).reduce((a,b)=>a+b,0);
@@ -694,24 +700,23 @@ function render(){
     ${boostActive?`<div style="margin-top:4px;display:inline-flex;align-items:center;gap:4px;background:#fff0d8;border:1.5px solid #ffc060;border-radius:10px;padding:2px 8px;"><span style="font-size:10px;">🚀</span><span style="font-size:10px;color:#e07020;font-weight:700;">XP×${state.xpBoost.multiplier} ブースト中 (残り${boostRemH}h)</span></div>`:''}
   </div>`;
 
-  // 満腹ゲージ
+  // 満腹ゲージ（アクティブキャラ）
+  const charFull=Math.round(activeChar.fullness||0);
   const fullBar=`<div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#70a890;margin-bottom:3px;">
       <span>満腹度 ${mood.emoji}</span>
-      <span style="color:${mood.bar};font-weight:700;">${state.fullness}%</span>
+      <span style="color:${mood.bar};font-weight:700;">${charFull}%</span>
     </div>
     <div style="height:12px;border-radius:8px;background:#f8f4f0;border:1.5px solid ${mood.border};overflow:hidden;position:relative;">
-      <div style="height:100%;border-radius:8px;width:${state.fullness}%;background:linear-gradient(90deg,${mood.bar}aa,${mood.bar});transition:width .6s;${state.fullness>80?'animation:fullPulse 1.5s ease-in-out infinite;':''}"></div>
+      <div style="height:100%;border-radius:8px;width:${charFull}%;background:linear-gradient(90deg,${mood.bar}aa,${mood.bar});transition:width .6s;${charFull>80?'animation:fullPulse 1.5s ease-in-out infinite;':''}"></div>
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7px;color:#607870;font-weight:700;">${mood.label}</div>
     </div>
   </div>`;
 
   // キャラエリア
   const numChars=charCount(curLevel);
-  if(!state.chars)state.chars=[{name:state.charName||"推し",photo:state.charPhoto||null}];
-  while(state.chars.length<numChars)state.chars.push({name:`推し${state.chars.length+1}`,photo:null});
-  const activeCharIdx=Math.min(state.activeCharIdx||0,state.chars.length-1);
-  const activeChar=state.chars[activeCharIdx];
+  if(!state.chars)state.chars=[{name:state.charName||"推し",photo:state.charPhoto||null,fullness:30}];
+  while(state.chars.length<numChars)state.chars.push({name:`推し${state.chars.length+1}`,photo:null,fullness:30});
 
   const aura=activeChar.photo?`<div style="position:absolute;inset:0;border-radius:50%;pointer-events:none;overflow:hidden;">
     <svg viewBox="0 0 100 100" width="100%" height="100%">
@@ -797,7 +802,23 @@ function render(){
 
   // ── ごはんタブ ──
   const foodEntries=Object.entries(state.foodInventory||{});
+  // 全キャラの満腹度カード
+  const allCharCards=state.chars.slice(0,numChars).map((c,i)=>{
+    const cf=Math.round(c.fullness||0);const cm=getMood(cf);const isAct=i===activeCharIdx;
+    return `<div onclick="switchChar(${i})" style="flex:1;min-width:0;padding:10px 8px;border-radius:14px;background:${isAct?cm.bg:'#fff'};border:2px solid ${isAct?cm.border:'#d8ecd8'};cursor:pointer;text-align:center;transition:all .2s;box-shadow:${isAct?`0 3px 12px ${cm.bar}33`:'none'};">
+      <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid ${cm.border};margin:0 auto;">
+        ${c.photo?`<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:18px;background:#f0fff8;">👤</div>`}
+      </div>
+      <div style="font-size:10px;font-weight:700;color:#3a2a4a;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.name}</div>
+      <div style="font-size:16px;margin-top:2px;">${cm.emoji}</div>
+      <div style="height:5px;border-radius:4px;background:#f0ece8;border:1px solid ${cm.border};overflow:hidden;margin-top:3px;">
+        <div style="height:100%;width:${cf}%;background:${cm.bar};border-radius:4px;transition:width .5s;"></div>
+      </div>
+      <div style="font-size:9px;color:${cm.bar};font-weight:700;margin-top:2px;">${cf}%</div>
+    </div>`;
+  }).join('');
   let feedHTML=`<div style="padding:14px;">
+  ${numChars>1?`<div style="display:flex;gap:8px;margin-bottom:12px;">${allCharCards}</div>`:''}
   <div class="card" style="padding:16px;margin-bottom:14px;">
     <div style="display:flex;gap:14px;align-items:center;">
       <div id="feed-char" style="position:relative;width:80px;height:80px;flex-shrink:0;animation:floatA 3s ease-in-out infinite;">

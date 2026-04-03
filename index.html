@@ -71,33 +71,52 @@ html,body{background:#f8fff8;font-family:'Noto Sans JP',sans-serif;color:#3a2a4a
 // ══════════════════════════
 //  定数
 // ══════════════════════════
-const RANKS=[
-  {level:1, title:"迷える旅人",       icon:"🌱",minXP:0},
-  {level:2, title:"希望の芽生え",     icon:"🌿",minXP:100},
-  {level:3, title:"朝露の探求者",     icon:"🌸",minXP:250},
-  {level:4, title:"光を集める者",     icon:"☀️",minXP:450},
-  {level:5, title:"心の庭師",         icon:"🌻",minXP:700},
-  {level:6, title:"穏やかな戦士",     icon:"⚔️",minXP:1000},
-  {level:7, title:"幸せの錬金術師",   icon:"⚗️",minXP:1400},
-  {level:8, title:"内なる光の守護者", icon:"🔮",minXP:1900},
-  {level:9, title:"叡智の賢者",       icon:"🧙",minXP:2500},
-  {level:10,title:"至福の覚醒者",     icon:"✨",minXP:3200},
-  {level:11,title:"夢を紡ぐ者",       icon:"🌙",minXP:4000},
-  {level:12,title:"奇跡の種まき師",   icon:"🌟",minXP:4900},
-  {level:13,title:"調和の体現者",     icon:"☯️",minXP:5900},
-  {level:14,title:"慈愛の巡礼者",     icon:"🕊️",minXP:7000},
-  {level:15,title:"黄金の探求者",     icon:"👑",minXP:8200},
-  {level:16,title:"天空の歩み人",     icon:"🦋",minXP:9500},
-  {level:17,title:"永遠の灯台守",     icon:"🏮",minXP:10900},
-  {level:18,title:"宇宙の調律師",     icon:"🎵",minXP:12400},
-  {level:19,title:"無限の愛の体現",   icon:"💎",minXP:14000},
-  {level:20,title:"幸福の神話の人",   icon:"🌈",minXP:15700},
-  {level:21,title:"超越した旅人",     icon:"⭐",minXP:17500},
-  {level:22,title:"星々の語り部",     icon:"🌠",minXP:19400},
-  {level:23,title:"時空の賢者",       icon:"⏳",minXP:21400},
-  {level:24,title:"神聖なる守護者",   icon:"🛡️",minXP:23500},
-  {level:25,title:"至高の幸せ人",     icon:"🎇",minXP:25700},
+// ── XPシステム（レベル1〜999） ──
+function xpToNext(L){
+  if(L>=999)return Infinity;
+  if(L>=100)return 960;
+  if(L>=70)return Math.round(480+(L-70)*16);
+  if(L>=30)return Math.round(240+(L-30)*6);
+  if(L>=10)return Math.round(210+(L-10)*1.5);
+  return [25,35,50,70,90,115,140,170,200][L-1]||25;
+}
+// LEVEL_XP[L] = レベルLに到達するための累計XP
+const LEVEL_XP=[0,0];
+for(let i=2;i<=999;i++)LEVEL_XP[i]=LEVEL_XP[i-1]+xpToNext(i-1);
+
+// 称号テーブル（10レベルごと、Lv1〜99）
+const TITLE_DATA=[
+  {icon:"🌱",title:"迷える旅人"},
+  {icon:"🌿",title:"希望の芽生え"},
+  {icon:"🌸",title:"朝露の探求者"},
+  {icon:"☀️",title:"光を集める者"},
+  {icon:"🌻",title:"心の庭師"},
+  {icon:"⚔️",title:"穏やかな戦士"},
+  {icon:"⚗️",title:"幸せの錬金術師"},
+  {icon:"🔮",title:"内なる光の守護者"},
+  {icon:"🧙",title:"叡智の賢者"},
+  {icon:"✨",title:"至福の覚醒者"},
 ];
+const DAN_ICONS=["🥋","🥊","🏆","👑","💎","⭐","🌟","🔥","🌈","✨"];
+
+function toDanNumber(n){
+  if(n===1)return"初";
+  const ones=["","一","二","三","四","五","六","七","八","九"];
+  if(n<10)return ones[n];
+  const t=Math.floor(n/10),o=n%10;
+  return(t===1?"十":ones[t]+"十")+ones[o];
+}
+function getTitleData(level){
+  if(level<100)return TITLE_DATA[Math.min(Math.floor(level/10),9)];
+  const dan=Math.floor((level-100)/10)+1;
+  return{icon:DAN_ICONS[(dan-1)%DAN_ICONS.length],title:`${toDanNumber(dan)}段`};
+}
+function getLevelNum(xp){
+  let lo=1,hi=999;
+  while(lo<hi){const mid=Math.floor((lo+hi+1)/2);if(LEVEL_XP[mid]<=xp)lo=mid;else hi=mid-1;}
+  return lo;
+}
+const charCount=lv=>Math.min(1+Math.floor(lv/100),10);
 
 const BASE_QUESTS=[
   {id:"meditation",label:"瞑想する",          desc:"1分間の静寂",        icon:"🧘",baseXP:30,food:"matcha"},
@@ -110,14 +129,19 @@ const BASE_QUESTS=[
 ];
 
 const FOODS={
-  matcha:     {emoji:"🍵",label:"抹茶",        moodUp:2,desc:"心が落ち着くよ〜"},
-  milk:       {emoji:"🥛",label:"ミルク",      moodUp:1,desc:"栄養満点だよ！"},
-  egg:        {emoji:"🥚",label:"たまご",      moodUp:2,desc:"完全食だね✨"},
-  banana:     {emoji:"🍌",label:"バナナ",      moodUp:2,desc:"元気出た〜！"},
-  apple:      {emoji:"🍎",label:"りんご",      moodUp:1,desc:"シャキシャキ！"},
-  corn:       {emoji:"🌽",label:"とうもろこし",moodUp:1,desc:"甘くておいしい！"},
-  strawberry: {emoji:"🍓",label:"いちご",      moodUp:3,desc:"大好物！やった！"},
-  cucumber:   {emoji:"🥒",label:"きゅうり",    moodUp:2,desc:"シャキシャキ〜！"},
+  matcha:     {emoji:"🍵",label:"抹茶",            moodUp:2,desc:"心が落ち着くよ〜"},
+  milk:       {emoji:"🥛",label:"ミルク",          moodUp:1,desc:"栄養満点だよ！"},
+  egg:        {emoji:"🥚",label:"たまご",          moodUp:2,desc:"完全食だね✨"},
+  banana:     {emoji:"🍌",label:"バナナ",          moodUp:2,desc:"元気出た〜！"},
+  apple:      {emoji:"🍎",label:"りんご",          moodUp:1,desc:"シャキシャキ！"},
+  corn:       {emoji:"🌽",label:"とうもろこし",    moodUp:1,desc:"甘くておいしい！"},
+  strawberry: {emoji:"🍓",label:"いちご",          moodUp:3,desc:"大好物！やった！"},
+  cucumber:   {emoji:"🥒",label:"きゅうり",        moodUp:2,desc:"シャキシャキ〜！"},
+  // 週次チャレンジ特別アイテム
+  gift_box:   {emoji:"🎁",label:"ギフトボックス",  moodUp:8,desc:"週チャレ達成の証！",special:true},
+  rainbow:    {emoji:"🌈",label:"レインボーキャンディ",moodUp:8,desc:"夢みたいにうれしい！",special:true},
+  diamond:    {emoji:"💎",label:"ダイヤモンド",    moodUp:8,desc:"最高の宝物だよ！",special:true},
+  golden_star:{emoji:"⭐",label:"ゴールデンスター",moodUp:8,desc:"輝いてる！！",special:true},
 };
 
 const MOODS=[
@@ -132,15 +156,147 @@ const load=()=>{try{const r=localStorage.getItem("hq_v4");return r?JSON.parse(r)
 const save=d=>{try{localStorage.setItem("hq_v4",JSON.stringify(d));}catch{}};
 const today=()=>new Date().toISOString().slice(0,10);
 const dqId=k=>BASE_QUESTS[k.split("-").reduce((a,b)=>a+parseInt(b),0)%BASE_QUESTS.length].id;
-const getLevel=xp=>{let r=RANKS[0];for(const x of RANKS){if(xp>=x.minXP)r=x;}return r;};
-const getNextRank=xp=>{for(const r of RANKS){if(xp<r.minXP)return r;}return null;};
+const getLevel=xp=>{const level=getLevelNum(xp);const td=getTitleData(level);return{level,title:td.title,icon:td.icon,minXP:LEVEL_XP[level]};};
+const getNextRank=xp=>{const level=getLevelNum(xp);if(level>=999)return null;const nl=level+1;const td=getTitleData(nl);return{level:nl,title:td.title,icon:td.icon,minXP:LEVEL_XP[nl]};};
 const ticketsEarned=lv=>Math.floor(lv/20);
 const getMood=full=>{for(const m of MOODS){if(full>=m.min&&full<=m.max)return m;}return MOODS[0];};
 
+// ── ストリーク・ガチャ ──
+function getNextStreakMilestone(n){
+  for(const m of[1,2,3,5,7,10,20,30,50,100])if(m>n)return m;
+  return Math.ceil((n+1)/50)*50;
+}
+// 全体XPブースト（チケット使用後）
+function getBoostMultiplier(){
+  if(!state.xpBoost)return 1;
+  if(Date.now()>state.xpBoost.expiresAt){delete state.xpBoost;save(state);return 1;}
+  return state.xpBoost.multiplier;
+}
+// クエスト個別ブースト（早期ストリーク報酬）
+function getQuestBoostMult(questId){
+  if(!state.questBoost)return 1;
+  if(Date.now()>state.questBoost.expiresAt){delete state.questBoost;save(state);return 1;}
+  return state.questBoost.questId===questId?state.questBoost.multiplier:1;
+}
+// ブーストチケット追加
+function addBoostTicket(reason){
+  if(!state.boostTickets)state.boostTickets=[];
+  state.boostTickets.push({id:Date.now(),earnedAt:today(),reason,used:false,usedAt:null});
+  save(state);
+  showBoostTicketGained(reason);
+}
+function showBoostTicketGained(reason){
+  const bg=document.createElement('div');bg.className='modal-bg';
+  bg.innerHTML=`<div style="text-align:center;padding:32px 28px;background:#fff;border:3px solid #b060ff;border-radius:28px;box-shadow:0 8px 40px #a04off55;max-width:290px;width:100%;animation:popIn .4s ease;">
+    <div style="font-size:50px;animation:moodBounce .8s ease-out;">🎟️</div>
+    <div style="color:#8030d0;font-size:11px;letter-spacing:3px;font-weight:700;margin-top:8px;">BOOST TICKET</div>
+    <div style="color:#3a2a4a;font-size:15px;font-weight:900;margin-top:4px;">XPブーストチケット獲得！</div>
+    <div style="color:#90a890;font-size:11px;margin-top:5px;">${reason}</div>
+    <div style="color:#80a0c0;font-size:11px;margin-top:8px;">チケットタブからガチャを引こう！</div>
+    <button onclick="this.closest('.modal-bg').remove();render();" style="margin-top:14px;width:100%;padding:10px;background:linear-gradient(135deg,#a040e0,#8020c0);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;">OK ✨</button>
+  </div>`;
+  document.body.appendChild(bg);
+}
+function useBoostTicket(ticketId){
+  const tk=(state.boostTickets||[]).find(t=>t.id===ticketId);
+  if(!tk||tk.used)return;
+  tk.used=true;tk.usedAt=today();save(state);
+  showBoostGacha();
+}
+
+// ── 週次ブーストチケット（型・倍率を事前抽選） ──
+function awardWeeklyBoostTicket(questOnly=false){
+  const isQuestType=questOnly||Math.random()<0.6;
+  const r=Math.random();
+  const mult=r<.4?2:r<.7?3:r<.9?4:5;
+  const questId=isQuestType?BASE_QUESTS[Math.floor(Math.random()*BASE_QUESTS.length)].id:null;
+  const ticket={id:Date.now(),earnedAt:today(),type:isQuestType?'quest':'overall',multiplier:mult,questId,used:false,usedAt:null};
+  if(!state.weeklyBoostTickets)state.weeklyBoostTickets=[];
+  state.weeklyBoostTickets.push(ticket);save(state);
+  setTimeout(()=>showWeeklyTicketGained(ticket),0);
+}
+function showWeeklyTicketGained(ticket){
+  const q=ticket.questId?BASE_QUESTS.find(x=>x.id===ticket.questId):null;
+  const mc={2:'#60b0f0',3:'#50c050',4:'#e08030',5:'#c040c0'};
+  const isQ=ticket.type==='quest';
+  const bg=document.createElement('div');bg.className='modal-bg';
+  bg.innerHTML=`<div style="text-align:center;padding:32px 28px;background:#fff;border:3px solid ${isQ?'#60b0ff':'#b060ff'};border-radius:28px;box-shadow:0 8px 40px ${isQ?'#4090ff':'#9040ff'}33;max-width:300px;width:100%;animation:popIn .4s ease;">
+    <div style="font-size:50px;animation:moodBounce .8s ease-out;">${isQ?'🎯':'🚀'}</div>
+    <div style="color:${isQ?'#2060c0':'#8030d0'};font-size:11px;letter-spacing:3px;font-weight:700;margin-top:8px;">WEEKLY COMPLETE!</div>
+    <div style="color:#3a2a4a;font-size:15px;font-weight:900;margin-top:4px;">${isQ?'クエストブーストチケット':'全体XPブーストチケット'}獲得！</div>
+    <div style="margin-top:14px;padding:14px;background:${isQ?'linear-gradient(135deg,#f0f4ff,#e4ecff)':'linear-gradient(135deg,#f8f0ff,#f0e8ff)'};border:2px solid ${isQ?'#80b0ff':'#c080ff'};border-radius:14px;">
+      <div style="font-size:30px;">${isQ?(q?q.icon:'❓'):'✨'}</div>
+      <div style="font-size:12px;font-weight:700;color:${isQ?'#2060c0':'#8030d0'};margin-top:3px;">${isQ?(q?q.label:'?'):'全クエスト対象'}</div>
+      <div style="font-size:38px;font-weight:900;color:${mc[ticket.multiplier]};font-family:'Nunito';line-height:1.2;">×${ticket.multiplier}</div>
+      <div style="color:#90a090;font-size:10px;">24時間ブースト</div>
+    </div>
+    <div style="color:#80a0c0;font-size:11px;margin-top:8px;">チケットタブから使えるよ！</div>
+    <button onclick="this.closest('.modal-bg').remove();render();" style="margin-top:12px;width:100%;padding:10px;background:linear-gradient(135deg,${isQ?'#3090ff,#1060d0':'#c060ff,#8020d0'});border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;">やった！ ✨</button>
+  </div>`;
+  document.body.appendChild(bg);
+  if(ticket.multiplier>=4){for(let i=0;i<12;i++){const sp=document.createElement('div');sp.style.cssText=`position:fixed;pointer-events:none;z-index:10002;font-size:${14+Math.random()*18}px;top:${10+Math.random()*80}%;left:${5+Math.random()*90}%;animation:sparkle ${.6+Math.random()*.9}s ease-out ${Math.random()*.5}s forwards;`;sp.textContent=['✨','⭐','🌟','💫'][Math.floor(Math.random()*4)];document.body.appendChild(sp);setTimeout(()=>sp.remove(),2000);}}
+}
+function useWeeklyBoostTicket(ticketId){
+  const tk=(state.weeklyBoostTickets||[]).find(t=>t.id===ticketId);
+  if(!tk||tk.used)return;
+  tk.used=true;tk.usedAt=today();
+  const exp=Date.now()+24*60*60*1000;
+  if(tk.type==='quest'){state.questBoost={questId:tk.questId,multiplier:tk.multiplier,expiresAt:exp};}
+  else{state.xpBoost={multiplier:tk.multiplier,expiresAt:exp};}
+  save(state);render();
+  const q=tk.questId?BASE_QUESTS.find(x=>x.id===tk.questId):null;
+  const mc={2:'#60b0f0',3:'#50c050',4:'#e08030',5:'#c040c0'};
+  const isQ=tk.type==='quest';
+  const bg=document.createElement('div');bg.className='modal-bg';
+  bg.innerHTML=`<div style="text-align:center;padding:30px 28px;background:#fff;border:3px solid ${mc[tk.multiplier]};border-radius:28px;box-shadow:0 8px 40px ${mc[tk.multiplier]}44;max-width:290px;width:100%;animation:popIn .4s ease;">
+    <div style="font-size:50px;animation:moodBounce .7s ease-out;">${isQ?'🎯':'🚀'}</div>
+    <div style="color:${mc[tk.multiplier]};font-size:11px;letter-spacing:3px;font-weight:700;margin-top:8px;">BOOST ACTIVATED!</div>
+    <div style="color:#3a2a4a;font-size:16px;font-weight:900;margin-top:4px;">${isQ?(q?q.label+'のXP':'?のXP'):'全クエストのXP'}が<br><span style="font-size:36px;color:${mc[tk.multiplier]};font-family:'Nunito';">×${tk.multiplier}</span></div>
+    <div style="color:#90a890;font-size:11px;margin-top:8px;">24時間のブースト発動！ ✨</div>
+    <button onclick="this.closest('.modal-bg').remove();" style="margin-top:14px;width:100%;padding:10px;background:linear-gradient(135deg,#ff9030,#e06010);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;">OK ✨</button>
+  </div>`;
+  document.body.appendChild(bg);
+}
+
+// ── 週次チャレンジ ──
+const WEEKLY_REWARDS=['gift_box','rainbow','diamond','golden_star'];
+function getWeekId(){
+  const d=new Date(),start=new Date(d.getFullYear(),0,1);
+  return`${d.getFullYear()}-W${Math.floor((d-start)/(7*86400000))}`;
+}
+function getOrInitWeeklyQuest(){
+  const wid=getWeekId();
+  if(state.weeklyQuest&&state.weeklyQuest.weekId===wid)return state.weeklyQuest;
+  const picks=[...BASE_QUESTS].sort(()=>Math.random()-.5).slice(0,4);
+  state.weeklyQuest={weekId:wid,tasks:picks.map((q,i)=>({questId:q.id,goal:5,count:0,claimed:false,reward:WEEKLY_REWARDS[i]}))};
+  save(state);return state.weeklyQuest;
+}
+
+// ── 段位色 ──
+function getDanColor(dan){
+  if(dan>=20)return{bg:'#fff0f0',border:'#d04040',text:'#a02020',label:'🔴 赤帯'};
+  if(dan>=10)return{bg:'#f0f0f0',border:'#505050',text:'#202020',label:'⬛ 黒帯'};
+  if(dan>=5) return{bg:'#f5e8d8',border:'#a06030',text:'#704020',label:'🟫 茶帯'};
+  return{bg:'#f8f8f8',border:'#b0b0b0',text:'#606060',label:'⬜ 白帯'};
+}
+
 let state=(()=>{
   const s=load();
-  if(s){if(!s.foodInventory)s.foodInventory={};if(!s.fullness)s.fullness=30;if(!s.charName)s.charName="推し";return s;}
-  return{totalXP:0,loginDays:[],questLog:{},diaryEntries:{},repeatCounts:{},tickets:[],charName:"推し",charPhoto:null,foodInventory:{},fullness:30,totalFed:0};
+  if(s){
+    if(!s.foodInventory)s.foodInventory={};
+    if(!s.fullness)s.fullness=30;
+    if(!s.charName)s.charName="推し";
+    if(!s.chars){s.chars=[{name:s.charName||"推し",photo:s.charPhoto||null}];s.activeCharIdx=0;}
+    if(!s.loginStreak)s.loginStreak=0;
+    if(!s.lastStreakGachaMilestone)s.lastStreakGachaMilestone=0;
+    if(!s.boostTickets)s.boostTickets=[];
+    return s;
+  }
+  return{totalXP:0,loginDays:[],questLog:{},diaryEntries:{},repeatCounts:{},tickets:[],
+    chars:[{name:"推し",photo:null}],activeCharIdx:0,charName:"推し",charPhoto:null,
+    foodInventory:{},fullness:30,totalFed:0,
+    loginStreak:0,lastStreakGachaMilestone:0,weeklyQuest:null,
+    questBoost:null,xpBoost:null,boostTickets:[]};
 })();
 
 let todayDone=state.questLog[today()]||{};
@@ -151,24 +307,64 @@ let confirmTicketId=null;
 (()=>{const t=today();if(!state.loginDays.includes(t)){state.loginDays.push(t);save(state);}})();
 (()=>{
   const t=today(),last=state.lastLoginDate;
-  if(last&&last!==t){const days=Math.min(3,Math.round((new Date(t)-new Date(last))/(86400000)));state.fullness=Math.max(0,state.fullness-days*15);}
-  state.lastLoginDate=t;save(state);
+  if(last!==t){
+    if(last){
+      const days=Math.round((new Date(t)-new Date(last))/86400000);
+      state.fullness=Math.max(0,state.fullness-Math.min(3,days)*15);
+      const yStr=new Date(new Date(t)-86400000).toISOString().slice(0,10);
+      if(last===yStr){state.loginStreak=(state.loginStreak||0)+1;}
+      else{state.loginStreak=1;state.lastStreakGachaMilestone=0;}
+    }else{state.loginStreak=1;state.lastStreakGachaMilestone=0;}
+    state.lastLoginDate=t;save(state);
+    const nextMs=getNextStreakMilestone(state.lastStreakGachaMilestone||0);
+    if((state.loginStreak||0)>=nextMs){
+      state.lastStreakGachaMilestone=nextMs;save(state);
+      if(nextMs<30){
+        setTimeout(()=>showQuestGacha(state.loginStreak,nextMs),700);
+      }else{
+        setTimeout(()=>addBoostTicket(`${nextMs}日連続ログイン達成！🔥`),700);
+      }
+    }
+  }
 })();
 
 // ── ゲームロジック ──
 function earnXP(questId,baseXP){
   const t=today(),dq=dqId(t),lc=state.loginDays.length;
   const gm=(lc>0&&lc%10===0)?2:1;
-  const gained=Math.round(baseXP*(questId===dq?2:1)*gm);
+  const boost=getBoostMultiplier();
+  const questBoost=getQuestBoostMult(questId);
+  const gained=Math.round(baseXP*(questId===dq?2:1)*gm*boost*questBoost);
   const prev=state.totalXP,next=prev+gained;
   const pLv=getLevel(prev).level,nLv=getLevel(next).level;
   const pTix=ticketsEarned(pLv),nTix=ticketsEarned(nLv);
+  const pChars=charCount(pLv),nChars=charCount(nLv);
   let gotTicket=false;
   if(nTix>pTix){for(let i=0;i<nTix-pTix;i++)state.tickets.push({id:Date.now()+i,earnedAt:t,earnedAtLevel:nLv,used:false,usedAt:null});gotTicket=true;}
-  state.totalXP=next;state.questLog[t]=todayDone;state.repeatCounts[t]=todayRC;save(state);
-  showFloatingXP(gained);
-  if(nLv>pLv)showLevelUp(getLevel(next),gotTicket);else render();
+  if(nChars>pChars){while(state.chars.length<nChars)state.chars.push({name:`推し${state.chars.length+1}`,photo:null});}
+  state.totalXP=next;state.questLog[t]=todayDone;state.repeatCounts[t]=todayRC;
+  updateWeeklyProgress(questId);
+  save(state);
+  showFloatingXP(gained,boost>1||questBoost>1);
+  if(nLv>pLv)showLevelUp(getLevel(next),gotTicket,nChars>pChars);else render();
 }
+
+function updateWeeklyProgress(questId){
+  const wq=getOrInitWeeklyQuest();
+  const task=wq.tasks.find(t=>t.questId===questId);
+  if(!task||task.claimed)return;
+  task.count=Math.min(task.count+1,task.goal);
+  if(task.count>=task.goal){
+    task.claimed=true;
+    state.foodInventory[task.reward]=(state.foodInventory[task.reward]||0)+1;
+    setTimeout(()=>showWeeklyReward(task.reward),1800);
+    if(!wq.completionTicketGiven&&wq.tasks.every(t=>t.claimed)){
+      wq.completionTicketGiven=true;
+      setTimeout(()=>awardWeeklyBoostTicket(true),2800);
+    }
+  }
+}
+function switchChar(idx){state.activeCharIdx=idx;save(state);render();}
 
 function completeQuest(questId){
   const q=BASE_QUESTS.find(x=>x.id===questId);if(!q)return;
@@ -198,10 +394,131 @@ function confirmUse(){
 }
 
 // ── エフェクト ──
-function showFloatingXP(value){
+function showFloatingXP(value,boosted){
   const el=document.createElement('div');el.className='floating-xp';
-  el.textContent=`+${value} XP 🌟`;document.body.appendChild(el);
+  el.textContent=`+${value} XP ${boosted?'🚀':'🌟'}`;document.body.appendChild(el);
   setTimeout(()=>el.remove(),1600);setTimeout(render,300);
+}
+
+function showWeeklyReward(rewardId){
+  const food=FOODS[rewardId];if(!food)return;
+  const bg=document.createElement('div');bg.className='modal-bg';
+  bg.innerHTML=`<div style="text-align:center;padding:36px 32px;background:#fff;border:3px solid #ffc060;border-radius:28px;box-shadow:0 8px 40px #ffa04055;max-width:290px;width:100%;animation:popIn .4s ease;">
+    <div style="font-size:60px;animation:moodBounce .8s ease-out;">${food.emoji}</div>
+    <div style="color:#ff8020;font-size:11px;letter-spacing:3px;margin-top:10px;font-weight:700;">WEEKLY CLEAR!</div>
+    <div style="color:#3a2a4a;font-size:17px;font-weight:900;margin-top:4px;">「${food.label}」獲得！</div>
+    <div style="color:#90a890;font-size:12px;margin-top:6px;">${food.desc}</div>
+    <div style="color:#80a890;font-size:11px;margin-top:10px;">ごはんタブから推しに渡せるよ🎁</div>
+    <div style="color:#b0c0b0;font-size:10px;margin-top:12px;">タップで閉じる</div>
+  </div>`;
+  bg.onclick=()=>{bg.remove();render();};document.body.appendChild(bg);
+  for(let i=0;i<12;i++){
+    const sp=document.createElement('div');
+    sp.style.cssText=`position:fixed;pointer-events:none;z-index:10001;font-size:${14+Math.random()*18}px;top:${10+Math.random()*80}%;left:${5+Math.random()*90}%;animation:sparkle ${0.6+Math.random()*.9}s ease-out ${Math.random()*.5}s forwards;`;
+    sp.textContent=['✨','⭐','🌟','💫','🎉'][Math.floor(Math.random()*5)];
+    document.body.appendChild(sp);setTimeout(()=>sp.remove(),2000);
+  }
+}
+
+// クエスト個別ブーストガチャ（早期ストリーク用）
+function showQuestGacha(streak,milestone){
+  const bg=document.createElement('div');bg.className='modal-bg';bg.id='gacha-modal';
+  bg.innerHTML=`<div id="gacha-box" style="text-align:center;padding:32px 28px;background:#fff;border:3px solid #60b0ff;border-radius:28px;box-shadow:0 8px 40px #4090ff33;max-width:300px;width:100%;animation:popIn .4s ease;">
+    <div style="font-size:36px;">🎯</div>
+    <div style="color:#2060c0;font-size:11px;letter-spacing:3px;font-weight:700;margin-top:8px;">LOGIN BONUS</div>
+    <div style="color:#3a2a4a;font-size:16px;font-weight:900;margin-top:4px;">${streak}日連続ログイン！</div>
+    <div style="color:#90a890;font-size:12px;margin-top:3px;">${milestone}日達成🎉 クエストブースト！</div>
+    <div id="gacha-display" style="margin:20px 0;height:90px;display:flex;align-items:center;justify-content:center;">
+      <div id="gacha-card" onclick="doQuestGachaPull()" style="width:82px;height:82px;border-radius:18px;background:linear-gradient(135deg,#60c0ff,#2080e0);display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 4px 18px #4090ff55;cursor:pointer;">❓</div>
+    </div>
+    <div style="color:#90a890;font-size:11px;">カードをタップ！どのクエストが何倍になるかな？</div>
+  </div>`;
+  document.body.appendChild(bg);
+}
+function doQuestGachaPull(){
+  const card=document.getElementById('gacha-card');
+  if(!card||card.dataset.pulling)return;
+  card.dataset.pulling='1';card.onclick=null;card.style.cursor='default';
+  const icons=BASE_QUESTS.map(q=>q.icon);
+  let i=0;
+  const spin=setInterval(()=>{
+    card.textContent=icons[i%icons.length];card.style.fontSize='36px';i++;
+    if(i>22){
+      clearInterval(spin);
+      const quest=BASE_QUESTS[Math.floor(Math.random()*BASE_QUESTS.length)];
+      const r=Math.random();
+      const mult=r<.4?2:r<.7?3:r<.9?4:5;
+      showQuestGachaResult(quest,mult);
+    }
+  },70);
+}
+function showQuestGachaResult(quest,mult){
+  const colors={2:'#60b0f0',3:'#50c050',4:'#e08030',5:'#c040c0'};
+  const display=document.getElementById('gacha-display');
+  if(display)display.innerHTML=`<div style="animation:popIn .4s ease;text-align:center;"><div style="font-size:38px;">${quest.icon}</div><div style="font-size:12px;font-weight:700;color:#3a2a4a;margin-top:3px;">${quest.label}</div><div style="font-size:40px;font-weight:900;color:${colors[mult]};font-family:'Nunito';line-height:1.1;">×${mult}</div></div>`;
+  const box=document.getElementById('gacha-box');
+  if(box){
+    const ex=document.createElement('div');
+    ex.innerHTML=`<div style="margin-top:12px;padding:12px;background:linear-gradient(135deg,#f0f4ff,#e4ecff);border:2px solid #80b0ff;border-radius:14px;"><div style="color:#2060c0;font-size:13px;font-weight:700;">${quest.icon} ${quest.label} のXPが×${mult}！</div><div style="color:#8090a0;font-size:11px;margin-top:3px;">24時間のクエストブースト ✨</div></div><button onclick="document.getElementById('gacha-modal').remove();render();" style="margin-top:14px;width:100%;padding:12px;background:linear-gradient(135deg,#3090ff,#1060d0);border:none;color:#fff;border-radius:14px;cursor:pointer;font-size:14px;font-weight:700;box-shadow:0 4px 12px #2060c055;">やった！ ✨</button>`;
+    box.appendChild(ex);
+  }
+  state.questBoost={questId:quest.id,multiplier:mult,expiresAt:Date.now()+24*60*60*1000};save(state);
+  if(mult>=4){for(let i=0;i<12;i++){const sp=document.createElement('div');sp.style.cssText=`position:fixed;pointer-events:none;z-index:10002;font-size:${14+Math.random()*18}px;top:${10+Math.random()*80}%;left:${5+Math.random()*90}%;animation:sparkle ${.6+Math.random()*.9}s ease-out ${Math.random()*.5}s forwards;`;sp.textContent=['✨','⭐','🌟','💫'][Math.floor(Math.random()*4)];document.body.appendChild(sp);setTimeout(()=>sp.remove(),2000);}}
+}
+
+// 全体XPブーストガチャ（チケット使用時）
+function showBoostGacha(){
+  const bg=document.createElement('div');bg.className='modal-bg';bg.id='gacha-modal';
+  bg.innerHTML=`<div id="gacha-box" style="text-align:center;padding:32px 28px;background:#fff;border:3px solid #b060ff;border-radius:28px;box-shadow:0 8px 40px #9040ff33;max-width:300px;width:100%;animation:popIn .4s ease;">
+    <div style="font-size:36px;">🎰</div>
+    <div style="color:#8030d0;font-size:11px;letter-spacing:3px;font-weight:700;margin-top:8px;">XP BOOST GACHA</div>
+    <div style="color:#3a2a4a;font-size:16px;font-weight:900;margin-top:4px;">全体XPブーストガチャ！</div>
+    <div style="color:#90a890;font-size:12px;margin-top:3px;">何倍になるかな？🎊</div>
+    <div id="gacha-display" style="margin:20px 0;height:90px;display:flex;align-items:center;justify-content:center;">
+      <div id="gacha-card" onclick="doGachaPull()" style="width:82px;height:82px;border-radius:18px;background:linear-gradient(135deg,#c060ff,#8020d0);display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 4px 18px #9030e055;cursor:pointer;">❓</div>
+    </div>
+    <div style="color:#90a890;font-size:11px;">カードをタップして全体ブーストを獲得！</div>
+  </div>`;
+  document.body.appendChild(bg);
+}
+
+function doGachaPull(){
+  const card=document.getElementById('gacha-card');
+  if(!card||card.dataset.pulling)return;
+  card.dataset.pulling='1';card.onclick=null;card.style.cursor='default';
+  const seq=['2×','3×','2×','4×','3×','5×','2×','4×','3×','2×','4×','3×','5×','2×','3×'];
+  let i=0;
+  const spin=setInterval(()=>{
+    card.textContent=seq[i%seq.length];card.style.fontSize='28px';i++;
+    if(i>18){
+      clearInterval(spin);
+      const r=Math.random();
+      const mult=r<.4?2:r<.7?3:r<.9?4:5;
+      showGachaResult(mult);
+    }
+  },75);
+}
+
+function showGachaResult(mult){
+  const colors={2:'#60b0f0',3:'#50c050',4:'#e08030',5:'#c040c0'};
+  const labels={2:'ダブル',3:'トリプル',4:'クワドラ',5:'レジェンド！'};
+  const display=document.getElementById('gacha-display');
+  if(display)display.innerHTML=`<div style="animation:popIn .4s ease;text-align:center;"><div style="font-size:52px;font-weight:900;color:${colors[mult]};font-family:'Nunito',sans-serif;line-height:1;">${mult}×</div><div style="color:${colors[mult]};font-size:13px;font-weight:700;margin-top:4px;">${labels[mult]}</div></div>`;
+  const box=document.getElementById('gacha-box');
+  if(box){
+    const extra=document.createElement('div');
+    extra.innerHTML=`<div style="margin-top:12px;padding:12px;background:linear-gradient(135deg,#fff8f0,#fff0d8);border:2px solid #ffd060;border-radius:14px;"><div style="color:#e07020;font-size:13px;font-weight:700;">XPブースト ×${mult} 発動！</div><div style="color:#90a890;font-size:11px;margin-top:3px;">24時間のXPアップ ✨</div></div><button onclick="document.getElementById('gacha-modal').remove();render();" style="margin-top:16px;width:100%;padding:12px;background:linear-gradient(135deg,#ff9030,#e06010);border:none;color:#fff;border-radius:14px;cursor:pointer;font-size:14px;font-weight:700;box-shadow:0 4px 12px #e07020aa;">やった！ ✨</button>`;
+    box.appendChild(extra);
+  }
+  state.xpBoost={multiplier:mult,expiresAt:Date.now()+24*60*60*1000};save(state);
+  if(mult>=4){
+    for(let i=0;i<14;i++){
+      const sp=document.createElement('div');
+      sp.style.cssText=`position:fixed;pointer-events:none;z-index:10002;font-size:${14+Math.random()*18}px;top:${10+Math.random()*80}%;left:${5+Math.random()*90}%;animation:sparkle ${.6+Math.random()*.9}s ease-out ${Math.random()*.5}s forwards;`;
+      sp.textContent=['✨','⭐','🌟','💫','🎊'][Math.floor(Math.random()*5)];
+      document.body.appendChild(sp);setTimeout(()=>sp.remove(),2000);
+    }
+  }
 }
 
 function showFeedEffect(food,moodUp){
@@ -243,16 +560,17 @@ function showFoodSpeech(food){
   document.body.appendChild(sp);speechTimer=setTimeout(()=>sp.remove(),2500);
 }
 
-function showLevelUp(rank,gotTicket){
+function showLevelUp(rank,gotTicket,gotNewChar){
   const bg=document.createElement('div');
   bg.style.cssText='position:fixed;inset:0;z-index:10000;background:#ffffff88;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;';
   const tHTML=gotTicket?`<div style="margin-top:14px;padding:12px 20px;background:linear-gradient(135deg,#f0fff4,#e0f8ec);border:2px solid #60d090;border-radius:16px;"><div style="font-size:28px;">🎁</div><div style="color:#20a060;font-size:14px;font-weight:700;margin-top:4px;">1,000円チケット獲得！</div></div>`:'';
+  const cHTML=gotNewChar?`<div style="margin-top:14px;padding:12px 20px;background:linear-gradient(135deg,#fff8f0,#ffe8d0);border:2px solid #ffa060;border-radius:16px;"><div style="font-size:28px;">👥</div><div style="color:#e07020;font-size:14px;font-weight:700;margin-top:4px;">新しい推しを追加できます！</div><div style="color:#c0a090;font-size:10px;margin-top:2px;">設定から登録してね</div></div>`:'';
   bg.innerHTML=`<div style="text-align:center;padding:36px 44px;background:#fff;border:3px solid #ffc060;border-radius:28px;box-shadow:0 8px 40px #ffa04055;max-width:300px;width:100%;animation:popIn .4s ease;">
     <div style="font-size:60px;animation:moodBounce .8s ease-out;">${rank.icon}</div>
     <div style="color:#ff8020;font-size:12px;letter-spacing:4px;margin-top:10px;font-family:'Nunito',sans-serif;font-weight:900;">LEVEL UP!</div>
     <div style="color:#3a2a4a;font-size:30px;font-weight:900;margin-top:4px;font-family:'Nunito',sans-serif;">Lv.${rank.level}</div>
     <div style="color:#2090a0;font-size:17px;margin-top:4px;font-weight:700;">「${rank.title}」</div>
-    ${tHTML}
+    ${tHTML}${cHTML}
     <div style="color:#90a890;font-size:11px;margin-top:14px;">タップで閉じる</div>
   </div>`;
   bg.onclick=()=>{bg.remove();render();};document.body.appendChild(bg);
@@ -287,25 +605,31 @@ function showDiaryModal(quest){
   };
 }
 
-function showSetupModal(){
+function showSetupModal(charIdx){
+  if(charIdx===undefined)charIdx=state.activeCharIdx||0;
+  const numChars=charCount(getLevel(state.totalXP).level);
+  const ch=(state.chars||[])[charIdx]||{name:"推し",photo:null};
   const bg=document.createElement('div');bg.className='modal-bg';bg.id='setup-modal';
+  const tabsHTML=numChars>1?`<div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;">${Array.from({length:numChars},(_,i)=>`<button onclick="document.getElementById('setup-modal').remove();showSetupModal(${i})" style="flex:0 0 auto;padding:5px 14px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;background:${i===charIdx?'linear-gradient(135deg,#ff9030,#e06010)':'#f0f8f0'};border:${i===charIdx?'none':'1.5px solid #c0d8c0'};color:${i===charIdx?'#fff':'#80a890'};">推し${i+1}</button>`).join('')}</div>`:'';
   bg.innerHTML=`<div style="background:#fff;border:2px solid #ffc060;border-radius:24px;padding:24px;width:100%;max-width:360px;box-shadow:0 8px 32px #ffa04033;">
-    <div style="color:#e07020;font-weight:900;font-size:16px;margin-bottom:14px;font-family:'Nunito',sans-serif;">🎮 推しキャラ設定</div>
+    <div style="color:#e07020;font-weight:900;font-size:16px;margin-bottom:14px;font-family:'Nunito',sans-serif;">🎮 推しキャラ設定${numChars>1?` (推し${charIdx+1})`:''}
+    </div>
+    ${tabsHTML}
     <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px;">
       <div id="prev-wrap" onclick="document.getElementById('ph-inp').click()" style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #40c880;background:#f0fff8;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:8px;box-shadow:0 4px 16px #40c88044;">
-        ${state.charPhoto?`<img src="${state.charPhoto}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="text-align:center;color:#30b870;font-size:10px;"><div style="font-size:30px;">📷</div>写真を選ぶ</div>`}
+        ${ch.photo?`<img src="${ch.photo}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="text-align:center;color:#30b870;font-size:10px;"><div style="font-size:30px;">📷</div>写真を選ぶ</div>`}
       </div>
       <input type="file" id="ph-inp" accept="image/*" style="display:none;" onchange="previewPhoto(this)">
       <div style="color:#90a890;font-size:10px;">タップして写真を選択</div>
     </div>
     <div style="margin-bottom:16px;">
       <div style="color:#80a890;font-size:11px;margin-bottom:6px;">推しの名前</div>
-      <input id="nm-inp" type="text" value="${state.charName||''}" placeholder="名前を入力" maxlength="10"
+      <input id="nm-inp" type="text" value="${ch.name||''}" placeholder="名前を入力" maxlength="10"
         style="width:100%;background:#f8fff8;color:#3a2a4a;border:1.5px solid #a0d8b0;border-radius:12px;padding:10px 14px;font-size:15px;font-family:'Noto Sans JP',sans-serif;outline:none;text-align:center;font-weight:700;">
     </div>
     <div style="display:flex;gap:10px;">
       <button onclick="document.getElementById('setup-modal').remove()" style="flex:1;padding:10px;background:#f0f8f0;border:1.5px solid #c0d8c0;color:#80a890;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;">キャンセル</button>
-      <button onclick="saveSetup()" style="flex:2;padding:10px;background:linear-gradient(135deg,#ff9030,#e06010);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;box-shadow:0 4px 12px #e07020aa;">保存する ✓</button>
+      <button onclick="saveSetup(${charIdx})" style="flex:2;padding:10px;background:linear-gradient(135deg,#ff9030,#e06010);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;box-shadow:0 4px 12px #e07020aa;">保存する ✓</button>
     </div>
   </div>`;
   document.body.appendChild(bg);
@@ -318,9 +642,14 @@ function previewPhoto(inp){
   r.onload=e=>{window._tmpPhoto=e.target.result;const w=document.getElementById('prev-wrap');if(w)w.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;};
   r.readAsDataURL(f);
 }
-function saveSetup(){
-  const n=document.getElementById('nm-inp');state.charName=(n?n.value.trim():'')||'推し';
-  if(window._tmpPhoto){state.charPhoto=window._tmpPhoto;window._tmpPhoto=null;}
+function saveSetup(charIdx){
+  if(charIdx===undefined)charIdx=state.activeCharIdx||0;
+  if(!state.chars)state.chars=[{name:"推し",photo:null}];
+  while(state.chars.length<=charIdx)state.chars.push({name:`推し${state.chars.length+1}`,photo:null});
+  const n=document.getElementById('nm-inp');
+  state.chars[charIdx]={name:(n?n.value.trim():'')||`推し${charIdx+1}`,photo:window._tmpPhoto||state.chars[charIdx].photo||null};
+  window._tmpPhoto=null;
+  state.charName=state.chars[0].name;state.charPhoto=state.chars[0].photo;
   save(state);document.getElementById('setup-modal')?.remove();render();
 }
 
@@ -336,6 +665,9 @@ function render(){
   const unusedTix=(state.tickets||[]).filter(x=>!x.used).length;
   const dateStr=new Date().toLocaleDateString('ja-JP',{month:'long',day:'numeric',weekday:'short'});
   const invTotal=Object.values(state.foodInventory||{}).reduce((a,b)=>a+b,0);
+  const boostActive=state.xpBoost&&Date.now()<state.xpBoost.expiresAt;
+  const boostRemH=boostActive?Math.ceil((state.xpBoost.expiresAt-Date.now())/3600000):0;
+  const streak=state.loginStreak||1;
 
   // XPバー
   const xpBar=`<div>
@@ -347,6 +679,7 @@ function render(){
       <div style="height:100%;border-radius:8px;width:${Math.min(pct,100)}%;background:linear-gradient(90deg,#30b870,#60d890,#a0f0c0);box-shadow:0 0 8px #60d89066;transition:width .6s;"></div>
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7px;color:#508060;font-weight:700;">${Math.round(pct)}%</div>
     </div>
+    ${boostActive?`<div style="margin-top:4px;display:inline-flex;align-items:center;gap:4px;background:#fff0d8;border:1.5px solid #ffc060;border-radius:10px;padding:2px 8px;"><span style="font-size:10px;">🚀</span><span style="font-size:10px;color:#e07020;font-weight:700;">XP×${state.xpBoost.multiplier} ブースト中 (残り${boostRemH}h)</span></div>`:''}
   </div>`;
 
   // 満腹ゲージ
@@ -362,7 +695,13 @@ function render(){
   </div>`;
 
   // キャラエリア
-  const aura=state.charPhoto?`<div style="position:absolute;inset:0;border-radius:50%;pointer-events:none;overflow:hidden;">
+  const numChars=charCount(curLevel);
+  if(!state.chars)state.chars=[{name:state.charName||"推し",photo:state.charPhoto||null}];
+  while(state.chars.length<numChars)state.chars.push({name:`推し${state.chars.length+1}`,photo:null});
+  const activeCharIdx=Math.min(state.activeCharIdx||0,state.chars.length-1);
+  const activeChar=state.chars[activeCharIdx];
+
+  const aura=activeChar.photo?`<div style="position:absolute;inset:0;border-radius:50%;pointer-events:none;overflow:hidden;">
     <svg viewBox="0 0 100 100" width="100%" height="100%">
       <circle cx="25" cy="20" r="2" fill="#50d090" opacity="0"><animate attributeName="opacity" values="0;.9;0" dur="2.2s" repeatCount="indefinite" begin="0s"/><animate attributeName="r" values="1;3;1" dur="2.2s" repeatCount="indefinite" begin="0s"/></circle>
       <circle cx="75" cy="18" r="1.5" fill="#ffd060" opacity="0"><animate attributeName="opacity" values="0;.8;0" dur="1.8s" repeatCount="indefinite" begin=".8s"/></circle>
@@ -372,9 +711,11 @@ function render(){
     </svg>
   </div>`:'';
 
-  const photoContent=state.charPhoto
-    ?`<img src="${state.charPhoto}" alt="推し" style="width:100%;height:100%;object-fit:cover;">`
-    :`<div onclick="showSetupModal()" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#30b870;font-size:11px;gap:5px;background:#f0fff8;"><div style="font-size:32px;">👤</div><div style="font-weight:700;">タップして設定</div></div>`;
+  const photoContent=activeChar.photo
+    ?`<img src="${activeChar.photo}" alt="${activeChar.name}" style="width:100%;height:100%;object-fit:cover;">`
+    :`<div onclick="showSetupModal(${activeCharIdx})" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#30b870;font-size:11px;gap:5px;background:#f0fff8;"><div style="font-size:32px;">👤</div><div style="font-weight:700;">タップして設定</div></div>`;
+
+  const charSwitcher=numChars>1?`<div style="display:flex;gap:6px;justify-content:center;margin-top:6px;">${state.chars.slice(0,numChars).map((c,i)=>`<div onclick="switchChar(${i})" style="width:${i===activeCharIdx?34:26}px;height:${i===activeCharIdx?34:26}px;border-radius:50%;overflow:hidden;border:2px solid ${i===activeCharIdx?'#30b870':'#c0e8d0'};cursor:pointer;box-shadow:${i===activeCharIdx?'0 2px 8px #30b87066':'none'};transition:all .2s;flex-shrink:0;">${c.photo?`<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:${i===activeCharIdx?13:10}px;background:#f0fff8;">👤</div>`}</div>`).join('')}</div>`:'';
 
   const charArea=`
   <div style="display:flex;flex-direction:column;align-items:center;padding:12px 0 6px;position:relative;" id="char-area">
@@ -387,36 +728,46 @@ function render(){
         ${photoContent}${aura}
       </div>
     </div>
-    <div style="font-size:15px;font-weight:900;color:#e07020;margin-top:8px;font-family:'Nunito',sans-serif;">${state.charName}</div>
-    <div style="font-size:10px;color:#90a890;margin-top:2px;cursor:pointer;" onclick="showSetupModal()">✏️ 編集</div>
+    <div style="font-size:15px;font-weight:900;color:#e07020;margin-top:8px;font-family:'Nunito',sans-serif;">${activeChar.name}</div>
+    <div style="font-size:10px;color:#90a890;margin-top:2px;cursor:pointer;" onclick="showSetupModal(${activeCharIdx})">✏️ 編集</div>
+    ${charSwitcher}
   </div>`;
 
   // ── クエストタブ ──
+  const qbActive=state.questBoost&&Date.now()<(state.questBoost.expiresAt||0);
+  const qbQuest=qbActive?BASE_QUESTS.find(q=>q.id===state.questBoost.questId):null;
+  const qbRemH=qbActive?Math.ceil((state.questBoost.expiresAt-Date.now())/3600000):0;
   let questsHTML=`<div style="padding:14px;">
-    <div style="background:linear-gradient(135deg,#fff8e0,#f0fff4);border:1.5px solid #ffd0b0;border-radius:16px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+    <div style="background:linear-gradient(135deg,#fff8e0,#f0fff4);border:1.5px solid #ffd0b0;border-radius:16px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
       <span style="font-size:16px;">⚡</span>
       <span style="color:#e08030;font-size:12px;font-weight:700;">本日2倍XP: <b>${BASE_QUESTS.find(q=>q.id===dq)?.label}</b></span>
-    </div>`;
+    </div>
+    ${qbActive?`<div style="background:linear-gradient(135deg,#f0f4ff,#e4ecff);border:1.5px solid #80b0ff;border-radius:16px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">🎯</span><span style="color:#2060c0;font-size:12px;font-weight:700;">${qbQuest?qbQuest.icon:''} ${qbQuest?qbQuest.label:'?'} のXPが×${state.questBoost.multiplier}ブースト中！<span style="font-size:10px;color:#8090b0;font-weight:400;">（残り${qbRemH}h）</span></span></div>`:''}
+    ${boostActive?`<div style="background:linear-gradient(135deg,#f8f0ff,#f0e8ff);border:1.5px solid #c080ff;border-radius:16px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">🚀</span><span style="color:#8030d0;font-size:12px;font-weight:700;">全体XP×${state.xpBoost.multiplier}ブースト中！<span style="font-size:10px;color:#a080c0;font-weight:400;">（残り${boostRemH}h）</span></span></div>`:''}
+    `;
   for(const q of BASE_QUESTS){
     const isDone=q.repeatable?false:(q.hasDiary?todayDone.diary:todayDone[q.id]);
     const cnt=q.repeatable?(todayRC[q.id]||0):0;
     const isDouble=q.id===dq;
-    const xpShow=Math.round(q.baseXP*(isDouble?2:1)*gm);
+    const isQBoosted=state.questBoost&&state.questBoost.questId===q.id&&Date.now()<(state.questBoost.expiresAt||0);
+    const qbMult=isQBoosted?state.questBoost.multiplier:1;
+    const xpShow=Math.round(q.baseXP*(isDouble?2:1)*gm*qbMult);
     const food=FOODS[q.food];
-    const cardBg=isDone?'linear-gradient(135deg,#f0fff4,#e8f8f0)':'#fff';
-    const cardBorder=isDone?'#90d8a0':isDouble?'#ffb060':'#d0e8d0';
+    const cardBg=isDone?'linear-gradient(135deg,#f0fff4,#e8f8f0)':isQBoosted?'linear-gradient(135deg,#f0f4ff,#e8ecff)':'#fff';
+    const cardBorder=isDone?'#90d8a0':isQBoosted?'#80b0ff':isDouble?'#ffb060':'#d0e8d0';
     questsHTML+=`
     <div class="${isDone?'':'qbtn'}" ${isDone?'':` onclick="completeQuest('${q.id}')"`}
       style="display:flex;align-items:center;gap:12px;padding:13px 14px;margin-bottom:9px;
         background:${cardBg};border:1.5px solid ${cardBorder};border-radius:16px;
         opacity:${isDone?0.75:1};cursor:${isDone?'default':'pointer'};
-        box-shadow:0 3px 12px ${isDone?'#90d8a022':isDouble?'#ffb06033':'#90d8a022'};
-        ${isDouble&&!isDone?'animation:glow 2s ease-in-out infinite;':''}">
+        box-shadow:0 3px 12px ${isDone?'#90d8a022':isQBoosted?'#80b0ff33':isDouble?'#ffb06033':'#90d8a022'};
+        ${isQBoosted&&!isDone?'animation:glow 2s ease-in-out infinite;':''}${isDouble&&!isDone&&!isQBoosted?'animation:glow 2s ease-in-out infinite;':''}">
       <div style="font-size:26px;min-width:32px;text-align:center;">${q.icon}</div>
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
           <span style="font-size:13px;font-weight:700;color:${isDone?'#50a870':'#3a2a4a'};">${q.label}</span>
           ${isDouble?`<span class="pill" style="background:#fff0d8;color:#e08030;">×2⚡</span>`:''}
+          ${isQBoosted?`<span class="pill" style="background:#e8f0ff;color:#3060d0;">🎯×${qbMult}</span>`:''}
           ${(q.repeatable&&cnt>0)?`<span class="pill" style="background:#e8f0ff;color:#6080e0;">${cnt}回</span>`:''}
         </div>
         <div style="font-size:10px;color:#80a890;margin-top:2px;">${q.desc}${q.unit?`（${q.unit}）`:''}</div>
@@ -425,7 +776,7 @@ function render(){
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
         ${isDone
           ?'<div style="font-size:22px;">✅</div>'
-          :`<div style="background:linear-gradient(135deg,#ff9030,#e06010);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:14px;white-space:nowrap;box-shadow:0 3px 8px #e0701066;">+${xpShow} XP</div>`}
+          :`<div style="background:${isQBoosted?'linear-gradient(135deg,#4090ff,#2060d0)':'linear-gradient(135deg,#ff9030,#e06010)'};color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:14px;white-space:nowrap;box-shadow:0 3px 8px ${isQBoosted?'#3060d066':'#e0701066'};">+${xpShow} XP</div>`}
       </div>
     </div>`;
   }
@@ -438,12 +789,12 @@ function render(){
     <div style="display:flex;gap:14px;align-items:center;">
       <div id="feed-char" style="position:relative;width:80px;height:80px;flex-shrink:0;animation:floatA 3s ease-in-out infinite;">
         <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:2.5px solid ${mood.border};box-shadow:0 4px 16px ${mood.bar}44;">
-          ${state.charPhoto?`<img src="${state.charPhoto}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:#f0fff8;">👤</div>`}
+          ${activeChar.photo?`<img src="${activeChar.photo}" style="width:100%;height:100%;object-fit:cover;">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:#f0fff8;">👤</div>`}
         </div>
         <div style="position:absolute;bottom:-4px;right:-4px;font-size:22px;animation:moodBounce 2s ease-in-out infinite;">${mood.emoji}</div>
       </div>
       <div style="flex:1;">
-        <div style="color:#e07020;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;">${state.charName}</div>
+        <div style="color:#e07020;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;">${activeChar.name}</div>
         <div style="margin-top:6px;">${fullBar}</div>
         <div style="font-size:10px;color:#80a890;margin-top:5px;">通算 ${state.totalFed||0} 回ごはんをあげた 💕</div>
       </div>
@@ -457,7 +808,7 @@ function render(){
       <div style="margin-top:4px;">食べ物を集めよう！</div>
     </div>`;
   }else{
-    feedHTML+=`<div style="color:#e07020;font-size:12px;font-weight:700;text-align:center;margin-bottom:12px;">タップして ${state.charName} にあげよう 🎁</div>
+    feedHTML+=`<div style="color:#e07020;font-size:12px;font-weight:700;text-align:center;margin-bottom:12px;">タップして ${activeChar.name} にあげよう 🎁</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">`;
     for(const [fid,cnt] of foodEntries){
       const food=FOODS[fid];if(!food)continue;
@@ -498,22 +849,52 @@ function render(){
   diaryHTML+='</div>';
 
   // ── ウォレットタブ ──
+  const unusedBoostTix=(state.boostTickets||[]).filter(t=>!t.used).length;
   let walletHTML=`<div style="padding:14px;">
-  <div class="card-green" style="padding:16px;margin-bottom:14px;">
+
+  <!-- XPブーストチケット -->
+  <div style="background:linear-gradient(135deg,#f8f0ff,#f0e8ff);border:1.5px solid #c080ff;border-radius:16px;padding:14px;margin-bottom:14px;">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div><div style="color:#80a090;font-size:11px;">未使用チケット</div><div style="color:#20a060;font-size:28px;font-weight:900;margin-top:2px;font-family:'Nunito',sans-serif;">${unusedTix}枚</div></div>
-      <div style="text-align:right;"><div style="font-size:36px;">🎁</div><div style="color:#a0c0b0;font-size:10px;margin-top:2px;">次: Lv.${(Math.floor(curLevel/20)+1)*20}</div></div>
+      <div><div style="color:#8040c0;font-size:11px;">XPブーストチケット</div><div style="color:#8030d0;font-size:28px;font-weight:900;margin-top:2px;font-family:'Nunito',sans-serif;">${unusedBoostTix}枚</div></div>
+      <div style="text-align:right;"><div style="font-size:36px;">🎟️</div><div style="color:#b090d0;font-size:10px;margin-top:2px;">30日・週チャレで獲得</div></div>
     </div>
-    <div style="color:#90b0a0;font-size:11px;margin-top:10px;line-height:1.7;">Lv.20 ごとに 1,000円チケットを獲得。「使用する」を押して実世界で交換！</div>
+    <div style="color:#a080c0;font-size:11px;margin-top:8px;line-height:1.6;">30日以上連続ログインや週チャレコンプリートで獲得。使うと全体XPブーストガチャが引ける！</div>
+  </div>`;
+  const btks=state.boostTickets||[];
+  if(!btks.length){
+    walletHTML+=`<div style="text-align:center;color:#b090c0;padding:16px 20px;font-size:12px;background:#f8f4ff;border-radius:14px;margin-bottom:14px;"><div style="font-size:28px;margin-bottom:6px;">🎟️</div><div>30日連続ログイン or 週チャレコンプリートで獲得！</div></div>`;
+  }else{
+    for(const tk of [...btks].reverse()){
+      walletHTML+=`<div style="${tk.used?'background:#f8f8f8;border:1.5px solid #e0e0e0;':'background:#f8f0ff;border:1.5px solid #c080ff;'} border-radius:16px;padding:14px;margin-bottom:10px;opacity:${tk.used?0.5:1};position:relative;overflow:hidden;box-shadow:${tk.used?'none':'0 3px 12px #c080ff33'};">
+        ${!tk.used?`<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#c080ff80,transparent);animation:shimmer 2s infinite;"></div>`:''}
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:32px;">${tk.used?'🗒️':'🎟️'}</div>
+          <div style="flex:1;"><div style="color:${tk.used?'#aaa':'#8030d0'};font-size:13px;font-weight:700;">XPブーストガチャチケット</div>
+            <div style="color:#b0a0c0;font-size:10px;margin-top:2px;">${tk.reason} • ${tk.earnedAt}</div>
+            ${tk.used?`<div style="color:#aaa;font-size:10px;margin-top:2px;">✓ 使用済み</div>`:''}
+          </div>
+          ${!tk.used?`<button onclick="useBoostTicket(${tk.id})" style="background:linear-gradient(135deg,#c060ff,#8020d0);border:none;color:#fff;padding:8px 12px;border-radius:12px;cursor:pointer;font-size:11px;font-weight:700;box-shadow:0 3px 8px #9030d066;white-space:nowrap;">ガチャを引く</button>`:''}
+        </div>
+      </div>`;
+    }
+  }
+
+  walletHTML+=`<div style="height:1px;background:#e8e8e8;margin:6px 0 14px;"></div>
+  <div class="card-green" style="padding:14px;margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="color:#80a090;font-size:11px;">1,000円プレゼントチケット</div><div style="color:#20a060;font-size:24px;font-weight:900;margin-top:2px;font-family:'Nunito',sans-serif;">${unusedTix}枚</div></div>
+      <div style="text-align:right;"><div style="font-size:32px;">🎁</div><div style="color:#a0c0b0;font-size:10px;margin-top:2px;">次: Lv.${(Math.floor(curLevel/20)+1)*20}</div></div>
+    </div>
+    <div style="color:#90b0a0;font-size:10px;margin-top:8px;">Lv.20ごとに獲得。「使用する」を押して実世界で交換！</div>
   </div>`;
   const tks=state.tickets||[];
-  if(!tks.length)walletHTML+=`<div style="text-align:center;color:#90b890;padding:36px 20px;font-size:12px;"><div style="font-size:44px;margin-bottom:10px;">🎁</div><div style="font-weight:700;">Lv.20 到達でチケット獲得！</div></div>`;
+  if(!tks.length)walletHTML+=`<div style="text-align:center;color:#90b890;padding:24px 20px;font-size:12px;"><div style="font-size:36px;margin-bottom:8px;">🎁</div><div style="font-weight:700;">Lv.20 到達でチケット獲得！</div></div>`;
   else for(const tk of [...tks].reverse()){
     walletHTML+=`<div style="${tk.used?'background:#f8f8f8;border:1.5px solid #e0e0e0;':'background:#f0fff8;border:1.5px solid #80e0a0;'} border-radius:16px;padding:14px;margin-bottom:10px;opacity:${tk.used?0.5:1};position:relative;overflow:hidden;box-shadow:${tk.used?'none':'0 3px 12px #80e0a033'};">
       ${!tk.used?`<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#80ff9080,transparent);animation:shimmer 2s infinite;"></div>`:''}
       <div style="display:flex;align-items:center;gap:12px;">
-        <div style="font-size:36px;">${tk.used?'📄':'🎁'}</div>
-        <div style="flex:1;"><div style="color:${tk.used?'#aaa':'#20a060'};font-size:14px;font-weight:700;">1,000円プレゼントチケット</div>
+        <div style="font-size:32px;">${tk.used?'📄':'🎁'}</div>
+        <div style="flex:1;"><div style="color:${tk.used?'#aaa':'#20a060'};font-size:13px;font-weight:700;">1,000円プレゼントチケット</div>
           <div style="color:#b0c0b8;font-size:10px;margin-top:2px;">Lv.${tk.earnedAtLevel} 達成 • ${tk.earnedAt}</div>
           ${tk.used?`<div style="color:#aaa;font-size:10px;margin-top:2px;">✓ 使用済み</div>`:''}
         </div>
@@ -524,30 +905,104 @@ function render(){
   walletHTML+='</div>';
 
   // ── 称号タブ ──
-  let ranksHTML=`<div style="padding:14px;"><div style="color:#80a890;font-size:11px;text-align:center;margin-bottom:12px;">Lv.20ごとに 🎁 1,000円チケット！</div>`;
-  for(const r of RANKS){
-    const unl=state.totalXP>=r.minXP,isCur=cur.level===r.level,isTix=r.level%20===0;
+  let ranksHTML=`<div style="padding:14px;">
+  <div style="color:#80a890;font-size:11px;text-align:center;margin-bottom:12px;">Lv.20ごとに 🎁 チケット・Lv.100から推し追加！</div>
+  <div style="background:linear-gradient(135deg,#fff8e0,#f0fff4);border:2px solid #ffc060;border-radius:16px;padding:14px;margin-bottom:16px;text-align:center;animation:glow 2s ease-in-out infinite;">
+    <div style="font-size:40px;">${cur.icon}</div>
+    <div style="color:#ff8020;font-size:10px;letter-spacing:3px;margin-top:6px;font-weight:700;">CURRENT TITLE</div>
+    <div style="color:#3a2a4a;font-size:18px;font-weight:900;margin-top:3px;">「${cur.title}」</div>
+    <div style="color:#70a890;font-size:11px;margin-top:3px;">Lv.${curLevel} • ${state.totalXP.toLocaleString()} XP</div>
+  </div>
+  <div style="font-size:10px;font-weight:700;color:#80a890;letter-spacing:1px;margin-bottom:8px;">◆ 称号ロードマップ (Lv.1〜99)</div>`;
+  for(let i=0;i<10;i++){
+    const startLv=i===0?1:i*10,endLv=i*10+9;
+    const td=TITLE_DATA[i];
+    const unl=curLevel>=startLv,isCur=curLevel>=startLv&&curLevel<=endLv;
+    const isTix=i>0&&(startLv%20===0);
     ranksHTML+=`<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;margin-bottom:7px;border-radius:14px;
       background:${isCur?'linear-gradient(135deg,#f0fff4,#e8fff0)':unl?'#fff':'#f8f8f8'};
       border:${isCur?'2px solid #30b870':unl?'1.5px solid #c0e8d0':'1.5px solid #e8e8e8'};
       opacity:${unl?1:0.45};box-shadow:${isCur?'0 4px 16px #30b87033':unl?'0 2px 8px #b0d8c022':'none'};">
-      <div style="font-size:24px;">${unl?r.icon:'🔒'}</div>
+      <div style="font-size:24px;">${unl?td.icon:'🔒'}</div>
       <div style="flex:1;">
         <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
-          <span style="font-family:'Nunito',sans-serif;font-size:11px;color:#e07020;font-weight:700;">Lv.${r.level}</span>
+          <span style="font-family:'Nunito',sans-serif;font-size:11px;color:#e07020;font-weight:700;">Lv.${startLv}〜${endLv}</span>
           ${isCur?`<span class="pill" style="background:#d8f0ff;color:#2080d0;">現在</span>`:''}
           ${isTix?`<span class="pill" style="background:#d8f0e8;color:#20a060;">🎁 チケット</span>`:''}
         </div>
-        <div style="font-size:13px;color:${unl?'#3a2a4a':'#aaa'};font-weight:700;">「${r.title}」</div>
-        <div style="font-size:9px;color:#c0b0c8;margin-top:1px;">${r.minXP.toLocaleString()} XP〜</div>
+        <div style="font-size:13px;color:${unl?'#3a2a4a':'#aaa'};font-weight:700;">「${td.title}」</div>
+        <div style="font-size:9px;color:#c0b0c8;margin-top:1px;">${LEVEL_XP[startLv].toLocaleString()} XP〜</div>
       </div>
     </div>`;
   }
+  ranksHTML+=`<div style="font-size:10px;font-weight:700;color:#80a890;letter-spacing:1px;margin:12px 0 8px;">◆ 段位 (Lv.100〜999)</div>`;
+  if(curLevel<100){
+    ranksHTML+=`<div style="text-align:center;color:#c0b0c8;font-size:12px;padding:20px;background:#f8f8f8;border-radius:14px;">🔒 Lv.100到達で段位が解禁<br><span style="font-size:10px;display:block;margin-top:4px;">あと ${(LEVEL_XP[100]-state.totalXP).toLocaleString()} XP</span></div>`;
+  }else{
+    const currentDan=Math.floor((curLevel-100)/10)+1;
+    const startDan=Math.max(1,currentDan-3),endDan=Math.min(90,currentDan+3);
+    if(startDan>1)ranksHTML+=`<div style="text-align:center;color:#c0b0c8;font-size:11px;padding:5px;margin-bottom:4px;">… 初段〜${toDanNumber(startDan-1)}段 解放済み …</div>`;
+    for(let dan=startDan;dan<=endDan;dan++){
+      const danLv=100+(dan-1)*10,danTd=getTitleData(danLv);
+      const unl=curLevel>=danLv,isCurDan=currentDan===dan;
+      const isCharMs=danLv%100===0,isTix=danLv%20===0;
+      const dc=getDanColor(dan);
+      ranksHTML+=`<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;margin-bottom:7px;border-radius:14px;
+        background:${isCurDan?`linear-gradient(135deg,${dc.bg},#e8fff0)`:unl?dc.bg:'#f8f8f8'};
+        border:${isCurDan?`2px solid ${dc.border}`:unl?`1.5px solid ${dc.border}`:'1.5px solid #e8e8e8'};
+        opacity:${unl?1:0.4};box-shadow:${isCurDan?`0 4px 16px ${dc.border}44`:'none'};">
+        <div style="font-size:24px;">${unl?danTd.icon:'🔒'}</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+            <span style="font-family:'Nunito',sans-serif;font-size:11px;color:#e07020;font-weight:700;">Lv.${danLv}</span>
+            ${isCurDan?`<span class="pill" style="background:#d8f0ff;color:#2080d0;">現在</span>`:''}
+            ${unl?`<span class="pill" style="background:${dc.bg};color:${dc.text};border:1px solid ${dc.border};">${dc.label}</span>`:''}
+            ${isCharMs?`<span class="pill" style="background:#fff0d8;color:#e08030;">👥 推し追加</span>`:''}
+            ${isTix&&!isCharMs?`<span class="pill" style="background:#d8f0e8;color:#20a060;">🎁</span>`:''}
+          </div>
+          <div style="font-size:13px;color:${unl?'#3a2a4a':'#aaa'};font-weight:700;">「${danTd.title}」</div>
+          <div style="font-size:9px;color:#c0b0c8;margin-top:1px;">${LEVEL_XP[danLv].toLocaleString()} XP〜</div>
+        </div>
+      </div>`;
+    }
+    if(endDan<90)ranksHTML+=`<div style="text-align:center;color:#c0b0c8;font-size:11px;padding:5px;margin-top:4px;">… ${toDanNumber(endDan+1)}段〜九十段 (未解放) …</div>`;
+  }
   ranksHTML+='</div>';
 
-  const tabs=[['quests','⚔️ クエスト'],['feed','🍽️ ごはん'],['diary','📖 日記'],['wallet','🎁 ウォレット'],['ranks','🏆 称号']];
+  // ── 週次チャレンジタブ ──
+  const wq=getOrInitWeeklyQuest();
+  const wDone=wq.tasks.filter(t=>t.claimed).length;
+  let weeklyHTML=`<div style="padding:14px;">
+  <div style="background:linear-gradient(135deg,#f0f8ff,#f0fff8);border:1.5px solid #b0d8e8;border-radius:16px;padding:14px;margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="color:#2080c0;font-size:13px;font-weight:900;">📅 今週のチャレンジ</div><div style="color:#80a0b0;font-size:10px;margin-top:2px;">各クエスト5回クリアで特別アイテム獲得！</div></div>
+      <div style="text-align:right;"><div style="color:#2080c0;font-size:22px;font-weight:900;font-family:'Nunito',sans-serif;">${wDone}/4</div><div style="color:#80a0b0;font-size:9px;">クリア</div></div>
+    </div>
+    <div style="display:flex;gap:5px;margin-top:10px;">${Array(4).fill(0).map((_,i)=>`<div style="flex:1;height:6px;border-radius:3px;background:${i<wDone?'#30b870':'#d0e8e0'};transition:background .4s;"></div>`).join('')}</div>
+  </div>`;
+  for(const task of wq.tasks){
+    const q=BASE_QUESTS.find(x=>x.id===task.questId);if(!q)continue;
+    const food=FOODS[task.reward];
+    const pct=Math.min((task.count/task.goal)*100,100);
+    weeklyHTML+=`<div style="background:${task.claimed?'linear-gradient(135deg,#f0fff4,#e8f8f0)':'#fff'};border:${task.claimed?'1.5px solid #90d8a0':'1.5px solid #d0e8d0'};border-radius:16px;padding:13px 14px;margin-bottom:9px;opacity:${task.claimed?.75:1};">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:26px;min-width:32px;text-align:center;">${q.icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:${task.claimed?'#50a870':'#3a2a4a'};">${q.label}</div>
+          <div style="font-size:10px;color:#80a890;margin-top:1px;">5回クリアで ${food?food.emoji:''} ${food?food.label:'特別アイテム'}</div>
+          <div style="margin-top:6px;height:7px;border-radius:4px;background:#e8f4e0;overflow:hidden;"><div style="height:100%;border-radius:4px;width:${pct}%;background:linear-gradient(90deg,#30b870,#60d890);transition:width .5s;"></div></div>
+          <div style="font-size:9px;color:#80a890;margin-top:3px;">${task.count}/${task.goal}回</div>
+        </div>
+        <div style="font-size:26px;">${task.claimed?'✅':food?food.emoji:'🎁'}</div>
+      </div>
+    </div>`;
+  }
+  if(wDone===4)weeklyHTML+=`<div style="text-align:center;padding:18px;background:linear-gradient(135deg,#fff8e0,#f0fff4);border:2px solid #ffc060;border-radius:16px;margin-top:8px;"><div style="font-size:36px;">🏆</div><div style="color:#e07020;font-size:14px;font-weight:900;margin-top:6px;">週次チャレンジ完全制覇！</div><div style="color:#90a890;font-size:11px;margin-top:3px;">特別アイテム×4 + 🎟️XPブーストチケット獲得！</div><div style="color:#8030d0;font-size:11px;margin-top:2px;">チケットタブからガチャを引こう</div></div>`;
+  weeklyHTML+=`</div>`;
+
+  const tabs=[['quests','⚔️ クエスト'],['weekly','📅 週チャレ'],['feed','🍽️ ごはん'],['diary','📖 日記'],['wallet','🎁 チケット'],['ranks','🏆 称号']];
   const tabBar=tabs.map(([id,l])=>`<button class="tab-btn ${activeTab===id?'active':''}" onclick="switchTab('${id}')">${l}</button>`).join('');
-  const content={quests:questsHTML,feed:feedHTML,diary:diaryHTML,wallet:walletHTML,ranks:ranksHTML}[activeTab]||'';
+  const content={quests:questsHTML,weekly:weeklyHTML,feed:feedHTML,diary:diaryHTML,wallet:walletHTML,ranks:ranksHTML}[activeTab]||'';
 
   const confirmModal=confirmTicketId?`
   <div class="modal-bg" onclick="if(event.target===this)cancelConfirm()">
@@ -573,7 +1028,10 @@ function render(){
       <div style="display:flex;gap:6px;align-items:center;">
         ${unusedTix>0?`<div onclick="switchTab('wallet')" style="background:#f0fff8;border:1.5px solid #80e0a0;border-radius:16px;padding:3px 10px;cursor:pointer;display:flex;align-items:center;gap:3px;animation:ticketGl 2s infinite;box-shadow:0 2px 8px #80e0a044;"><span style="font-size:13px;">🎁</span><span style="color:#20a060;font-size:11px;font-weight:700;">${unusedTix}</span></div>`:''}
         ${invTotal>0?`<div onclick="switchTab('feed')" style="background:#fff8f0;border:1.5px solid #ffc0a0;border-radius:16px;padding:3px 10px;cursor:pointer;display:flex;align-items:center;gap:3px;box-shadow:0 2px 8px #ffc0a044;"><span style="font-size:13px;">🍽️</span><span style="color:#e07030;font-size:11px;font-weight:700;">${invTotal}</span></div>`:''}
-        <div style="color:#c0a8c0;font-size:10px;"><span style="color:#60c080;font-weight:700;">${lc}</span>日</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+          <div style="background:#fff8f0;border:1.5px solid #ffd0a0;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:3px;"><span style="font-size:11px;">🔥</span><span style="color:#e07020;font-size:10px;font-weight:700;">${streak}日連続</span></div>
+          <div style="color:#c0a8c0;font-size:9px;">通算${lc}日</div>
+        </div>
       </div>
     </div>
 

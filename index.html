@@ -338,7 +338,7 @@ function earnXP(questId,baseXP){
   const prev=state.totalXP,next=prev+gained;
   const pLv=getLevel(prev).level;
   // 1クエストで上がるレベルは+1まで（余剰XPは次レベルの入口でキャップ）
-  const capXP=(pLv+2<=999)?LEVEL_XP[pLv+2]-1:Infinity;
+  const capXP=(pLv+2<=999)?LEVEL_XP[pLv+2]-5:Infinity;
   const cappedNext=Math.min(next,capXP);
   const nLv=getLevel(cappedNext).level;
   const pTix=ticketsEarned(pLv),nTix=ticketsEarned(nLv);

@@ -119,13 +119,13 @@ function getLevelNum(xp){
 const charCount=lv=>Math.min(1+Math.floor(lv/100),10);
 
 const BASE_QUESTS=[
-  {id:"meditation",label:"瞑想する",          desc:"1分間の静寂",        icon:"🧘",baseXP:30,food:"matcha"},
-  {id:"protein",   label:"プロテイン飲む",     desc:"タンパク質チャージ",  icon:"💪",baseXP:20,food:"milk"},
-  {id:"soy_egg",   label:"大豆 or 卵を食べる", desc:"良質なタンパク源",    icon:"🥚",baseXP:20,food:"egg"},
-  {id:"sleep",     label:"12時までに寝る",     desc:"早寝は最高の魔法",    icon:"🌙",baseXP:50,food:"banana"},
+  {id:"meditation",label:"瞑想する",          desc:"1分間の静寂",        icon:"🧘",baseXP:20,food:"matcha",repeatable:true,maxCount:5},
+  {id:"protein",   label:"プロテイン飲む",     desc:"タンパク質チャージ",  icon:"💪",baseXP:30,food:"milk",repeatable:true,maxCount:2},
+  {id:"soy_egg",   label:"大豆 or 卵を食べる", desc:"良質なタンパク源",    icon:"🥚",baseXP:30,food:"egg",repeatable:true,maxCount:3},
+  {id:"sleep",     label:"12時までに寝る",     desc:"早寝は最高の魔法",    icon:"🌙",baseXP:80,food:"banana"},
   {id:"walking",   label:"ウォーキング",       desc:"10分 = 1回分のXP",   icon:"🚶",baseXP:25,food:"apple",repeatable:true,unit:"10分"},
   {id:"sunlight",  label:"日光を浴びる",       desc:"10分 = 1回分のXP",   icon:"🌞",baseXP:25,food:"corn",repeatable:true,unit:"10分"},
-  {id:"diary",     label:"幸せ日記を書く",     desc:"今日の幸せを1つ記録", icon:"📖",baseXP:40,food:"strawberry",hasDiary:true},
+  {id:"diary",     label:"幸せ日記を書く",     desc:"今日の幸せを1つ記録", icon:"📖",baseXP:40,food:"strawberry",hasDiary:true,repeatable:true},
 ];
 
 const FOODS={
@@ -368,6 +368,7 @@ function switchChar(idx){state.activeCharIdx=idx;save(state);render();}
 
 function completeQuest(questId){
   const q=BASE_QUESTS.find(x=>x.id===questId);if(!q)return;
+  if(q.repeatable&&q.maxCount&&(todayRC[questId]||0)>=q.maxCount)return;
   if(q.food){state.foodInventory[q.food]=(state.foodInventory[q.food]||0)+1;}
   if(q.hasDiary){showDiaryModal(q);return;}
   if(q.repeatable){todayRC[questId]=(todayRC[questId]||0)+1;state.questLog[today()]=todayDone;state.repeatCounts[today()]=todayRC;save(state);earnXP(questId,q.baseXP);return;}
@@ -601,7 +602,7 @@ function showDiaryModal(quest){
     const txt=(inp?inp.value:'').trim();if(!txt)return;
     if(!state.diaryEntries)state.diaryEntries={};
     const t=today();if(!state.diaryEntries[t])state.diaryEntries[t]=[];
-    state.diaryEntries[t].unshift(txt);todayDone.diary=true;state.questLog[t]=todayDone;save(state);bg.remove();earnXP(quest.id,quest.baseXP);
+    state.diaryEntries[t].unshift(txt);todayRC['diary']=(todayRC['diary']||0)+1;state.repeatCounts[t]=todayRC;state.questLog[t]=todayDone;save(state);bg.remove();earnXP(quest.id,quest.baseXP);
   };
 }
 
@@ -746,7 +747,8 @@ function render(){
     ${boostActive?`<div style="background:linear-gradient(135deg,#f8f0ff,#f0e8ff);border:1.5px solid #c080ff;border-radius:16px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">🚀</span><span style="color:#8030d0;font-size:12px;font-weight:700;">全体XP×${state.xpBoost.multiplier}ブースト中！<span style="font-size:10px;color:#a080c0;font-weight:400;">（残り${boostRemH}h）</span></span></div>`:''}
     `;
   for(const q of BASE_QUESTS){
-    const isDone=q.repeatable?false:(q.hasDiary?todayDone.diary:todayDone[q.id]);
+    const isMaxed=q.maxCount?((todayRC[q.id]||0)>=q.maxCount):false;
+    const isDone=q.repeatable?isMaxed:todayDone[q.id];
     const cnt=q.repeatable?(todayRC[q.id]||0):0;
     const isDouble=q.id===dq;
     const isQBoosted=state.questBoost&&state.questBoost.questId===q.id&&Date.now()<(state.questBoost.expiresAt||0);
@@ -768,14 +770,14 @@ function render(){
           <span style="font-size:13px;font-weight:700;color:${isDone?'#50a870':'#3a2a4a'};">${q.label}</span>
           ${isDouble?`<span class="pill" style="background:#fff0d8;color:#e08030;">×2⚡</span>`:''}
           ${isQBoosted?`<span class="pill" style="background:#e8f0ff;color:#3060d0;">🎯×${qbMult}</span>`:''}
-          ${(q.repeatable&&cnt>0)?`<span class="pill" style="background:#e8f0ff;color:#6080e0;">${cnt}回</span>`:''}
+          ${(q.repeatable&&cnt>0)?`<span class="pill" style="background:#e8f0ff;color:#6080e0;">${cnt}${q.maxCount?`/${q.maxCount}`:''}回</span>`:''}
         </div>
-        <div style="font-size:10px;color:#80a890;margin-top:2px;">${q.desc}${q.unit?`（${q.unit}）`:''}</div>
+        <div style="font-size:10px;color:#80a890;margin-top:2px;">${q.desc}${q.unit?`（${q.unit}）`:''}${q.maxCount?`（1日${q.maxCount}回まで）`:''}</div>
         ${food&&!isDone?`<div style="font-size:10px;color:#80a890;margin-top:2px;">${food.emoji} ${food.label}がもらえる</div>`:''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
         ${isDone
-          ?'<div style="font-size:22px;">✅</div>'
+          ?(q.maxCount?'<div style="font-size:13px;font-weight:700;color:#60a878;background:#e8f8ee;padding:5px 10px;border-radius:14px;">✅ 上限達成</div>':'<div style="font-size:22px;">✅</div>')
           :`<div style="background:${isQBoosted?'linear-gradient(135deg,#4090ff,#2060d0)':'linear-gradient(135deg,#ff9030,#e06010)'};color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:14px;white-space:nowrap;box-shadow:0 3px 8px ${isQBoosted?'#3060d066':'#e0701066'};">+${xpShow} XP</div>`}
       </div>
     </div>`;

@@ -336,17 +336,21 @@ function earnXP(questId,baseXP){
   const questBoost=getQuestBoostMult(questId);
   const gained=Math.round(baseXP*(questId===dq?2:1)*gm*boost*questBoost);
   const prev=state.totalXP,next=prev+gained;
-  const pLv=getLevel(prev).level,nLv=getLevel(next).level;
+  const pLv=getLevel(prev).level;
+  // 1クエストで上がるレベルは+1まで（余剰XPは次レベルの入口でキャップ）
+  const capXP=(pLv+2<=999)?LEVEL_XP[pLv+2]-1:Infinity;
+  const cappedNext=Math.min(next,capXP);
+  const nLv=getLevel(cappedNext).level;
   const pTix=ticketsEarned(pLv),nTix=ticketsEarned(nLv);
   const pChars=charCount(pLv),nChars=charCount(nLv);
   let gotTicket=false;
   if(nTix>pTix){for(let i=0;i<nTix-pTix;i++)state.tickets.push({id:Date.now()+i,earnedAt:t,earnedAtLevel:nLv,used:false,usedAt:null});gotTicket=true;}
   if(nChars>pChars){while(state.chars.length<nChars)state.chars.push({name:`推し${state.chars.length+1}`,photo:null});}
-  state.totalXP=next;state.questLog[t]=todayDone;state.repeatCounts[t]=todayRC;
+  state.totalXP=cappedNext;state.questLog[t]=todayDone;state.repeatCounts[t]=todayRC;
   updateWeeklyProgress(questId);
   save(state);
   showFloatingXP(gained,boost>1||questBoost>1);
-  if(nLv>pLv)showLevelUp(getLevel(next),gotTicket,nChars>pChars);else render();
+  if(nLv>pLv)showLevelUp(getLevel(cappedNext),gotTicket,nChars>pChars);else render();
 }
 
 function updateWeeklyProgress(questId){

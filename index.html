@@ -306,11 +306,18 @@ let confirmTicketId=null;
 
 (()=>{const t=today();if(!state.loginDays.includes(t)){state.loginDays.push(t);save(state);}})();
 (()=>{
+  // 満腹度：時間ベースで減少（3.2%/時間）
+  const now=Date.now();
+  if(state.lastOpenedAt){
+    const hoursElapsed=(now-state.lastOpenedAt)/3600000;
+    state.fullness=Math.max(0,state.fullness-hoursElapsed*3.2);
+  }
+  state.lastOpenedAt=now;save(state);
+})();
+(()=>{
   const t=today(),last=state.lastLoginDate;
   if(last!==t){
     if(last){
-      const days=Math.round((new Date(t)-new Date(last))/86400000);
-      state.fullness=Math.max(0,state.fullness-Math.min(3,days)*15);
       const yStr=new Date(new Date(t)-86400000).toISOString().slice(0,10);
       if(last===yStr){state.loginStreak=(state.loginStreak||0)+1;}
       else{state.loginStreak=1;state.lastStreakGachaMilestone=0;}
@@ -385,7 +392,7 @@ function feedFood(foodId){
   state.foodInventory[foodId]=cnt-1;
   if(state.foodInventory[foodId]===0)delete state.foodInventory[foodId];
   const prevIdx=MOODS.indexOf(getMood(state.fullness));
-  state.fullness=Math.min(100,state.fullness+food.moodUp*8);
+  state.fullness=Math.min(100,state.fullness+food.moodUp*5);
   const newIdx=MOODS.indexOf(getMood(state.fullness));
   state.totalFed=(state.totalFed||0)+1;save(state);
   showFeedEffect(food,newIdx>prevIdx);
@@ -824,7 +831,7 @@ function render(){
           border:1.5px solid #c0e8d0;box-shadow:0 3px 12px #60c09022;position:relative;">
         <div style="font-size:36px;">${food.emoji}</div>
         <div style="color:#3a2a4a;font-size:11px;font-weight:700;margin-top:6px;">${food.label}</div>
-        <div style="font-size:9px;color:#c0a8c0;margin-top:2px;">+${food.moodUp*8}%</div>
+        <div style="font-size:9px;color:#c0a8c0;margin-top:2px;">+${food.moodUp*5}%</div>
         <div style="position:absolute;top:7px;right:7px;background:#ff9030;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;box-shadow:0 2px 6px #ff903066;">×${cnt}</div>
       </div>`;
     }

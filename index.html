@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#f5fff0">
 <title>HAPPINESS QUEST</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{background:#f8fff8;font-family:'Noto Sans JP',sans-serif;color:#3a2a4a;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
@@ -152,8 +153,18 @@ const MOODS=[
   {min:80, max:100,emoji:"🥰",label:"最高すぎる！！",  bg:"#fff8e0",border:"#f0c030",bar:"#f0a000"},
 ];
 
+// ── Supabase ──
+const SUPA_URL='https://agcfyavanwoufizjyjgh.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnY2Z5YXZhbndvdWZpemp5amdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODY1NzksImV4cCI6MjA5MDg2MjU3OX0.qe5gWtpktftVlToWI6qhimHz7xZiubcDZDkLESsFOQM';
+const UID_KEY='hq_uid';
+let _sb=null;
+const getSB=()=>{if(!_sb&&window.supabase)_sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);return _sb;};
+function getUID(){let id=localStorage.getItem(UID_KEY);if(!id){id=crypto.randomUUID?crypto.randomUUID():([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));localStorage.setItem(UID_KEY,id);}return id;}
+async function cloudSave(d){try{const sb=getSB();if(!sb)return;await sb.from('user_data').upsert({id:getUID(),data:d,updated_at:new Date().toISOString()});}catch(e){}}
+async function cloudLoad(uid){try{const sb=getSB();if(!sb)return null;const{data,error}=await sb.from('user_data').select('data').eq('id',uid).single();if(!error&&data)return data.data;}catch(e){}return null;}
+
 const load=()=>{try{const r=localStorage.getItem("hq_v5");return r?JSON.parse(r):null;}catch{return null;}};
-const save=d=>{try{localStorage.setItem("hq_v5",JSON.stringify(d));}catch{}};
+const save=d=>{try{localStorage.setItem("hq_v5",JSON.stringify(d));}catch{}cloudSave(d);};
 const today=()=>new Date().toISOString().slice(0,10);
 const dqId=k=>BASE_QUESTS[k.split("-").reduce((a,b)=>a+parseInt(b),0)%BASE_QUESTS.length].id;
 const getLevel=xp=>{const level=getLevelNum(xp);const td=getTitleData(level);return{level,title:td.title,icon:td.icon,minXP:LEVEL_XP[level]};};
@@ -936,6 +947,15 @@ function render(){
       </div>
     </div>`;
   }
+  // IDカード
+  const uid=localStorage.getItem(UID_KEY)||'（未生成）';
+  walletHTML+=`<div style="height:1px;background:#e8e8e8;margin:6px 0 14px;"></div>
+  <div style="background:linear-gradient(135deg,#f0f8ff,#e8f4ff);border:1.5px solid #80b0e0;border-radius:16px;padding:14px;margin-bottom:14px;">
+    <div style="color:#4070c0;font-size:11px;font-weight:700;margin-bottom:6px;">🔑 あなたのID（データ引き継ぎ用）</div>
+    <div onclick="copyUID()" style="background:#fff;border:1px solid #b0d0f0;border-radius:10px;padding:10px 12px;font-size:10px;font-family:monospace;color:#3060a0;word-break:break-all;cursor:pointer;margin-bottom:8px;">${uid}<br><span style="font-size:9px;color:#80a0c0;">タップでコピー</span></div>
+    <div style="color:#e07020;font-size:10px;font-weight:700;margin-bottom:8px;">⚠️ このIDを保存しておくと他の端末でも引き継げます</div>
+    <button onclick="showIdRestoreModal()" style="width:100%;padding:9px;background:linear-gradient(135deg,#4090ff,#2060d0);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:12px;font-weight:700;">🔄 IDで別の端末から引き継ぐ</button>
+  </div>`;
   walletHTML+='</div>';
 
   // ── 称号タブ ──
@@ -1091,7 +1111,127 @@ function render(){
 function switchTab(id){activeTab=id;render();}
 function cancelConfirm(){confirmTicketId=null;render();}
 
-render();
+// ── Supabase UI ──
+function copyUID(){
+  const uid=getUID();
+  navigator.clipboard?.writeText(uid).then(()=>{
+    const els=document.querySelectorAll('[onclick="copyUID()"] span');
+    els.forEach(el=>{el.textContent='コピーしました！✅';setTimeout(()=>{el.textContent='タップでコピー';},2000);});
+  }).catch(()=>{});
+}
+
+function showIdRestoreModal(){
+  const bg=document.createElement('div');bg.className='modal-bg';bg.id='restore-modal';
+  bg.innerHTML=`<div style="text-align:center;padding:28px;background:#fff;border:3px solid #4090ff;border-radius:28px;max-width:300px;width:100%;animation:popIn .4s ease;">
+    <div style="font-size:36px;">🔑</div>
+    <div style="color:#3a2a4a;font-size:16px;font-weight:900;margin-top:8px;">IDで引き継ぐ</div>
+    <div style="color:#90a890;font-size:11px;margin-top:4px;">引き継ぎたいIDを入力してください</div>
+    <input id="restore-inp" placeholder="xxxxxxxx-xxxx-xxxx-xxxx" style="width:100%;margin-top:12px;padding:10px 12px;border:1.5px solid #a0d0f0;border-radius:12px;font-size:11px;font-family:monospace;outline:none;background:#f8f8ff;color:#3060a0;">
+    <div id="restore-err" style="color:#e04040;font-size:11px;margin-top:6px;display:none;">IDが見つかりませんでした</div>
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+      <button onclick="doRestore()" style="width:100%;padding:12px;background:linear-gradient(135deg,#4090ff,#2060d0);border:none;color:#fff;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;">復元する</button>
+      <button onclick="document.getElementById('restore-modal').remove();" style="width:100%;padding:10px;background:#f0f0f0;border:none;color:#909090;border-radius:12px;font-size:12px;cursor:pointer;">キャンセル</button>
+    </div>
+  </div>`;
+  document.body.appendChild(bg);
+}
+
+async function doRestore(){
+  const inp=document.getElementById('restore-inp');
+  const id=(inp?inp.value:'').trim();if(!id)return;
+  const btn=document.querySelector('#restore-modal button');
+  if(btn){btn.textContent='復元中...';btn.disabled=true;}
+  const cloudData=await cloudLoad(id);
+  if(cloudData){
+    localStorage.setItem(UID_KEY,id);
+    localStorage.setItem('hq_v5',JSON.stringify(cloudData));
+    location.reload();
+  }else{
+    const err=document.getElementById('restore-err');
+    if(err)err.style.display='block';
+    if(btn){btn.textContent='復元する';btn.disabled=false;}
+  }
+}
+
+function showWelcomeModal(){
+  const bg=document.createElement('div');bg.className='modal-bg';bg.id='welcome-modal';
+  bg.innerHTML=`<div style="text-align:center;padding:36px 28px;background:#fff;border:3px solid #50c080;border-radius:28px;max-width:300px;width:100%;animation:popIn .4s ease;">
+    <div style="font-size:52px;">🌟</div>
+    <div style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;color:#e07020;margin-top:8px;">HAPPINESS QUEST</div>
+    <div style="color:#70a890;font-size:12px;margin-top:6px;">ようこそ！</div>
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px;">
+      <button onclick="startFresh()" style="width:100%;padding:13px;background:linear-gradient(135deg,#50c080,#30a060);border:none;color:#fff;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;">✨ はじめる</button>
+      <button onclick="showWelcomeRestore()" style="width:100%;padding:13px;background:#f0f8ff;border:2px solid #80b0e0;color:#4080c0;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;">🔑 IDで引き継ぐ</button>
+    </div>
+  </div>`;
+  document.body.appendChild(bg);
+}
+
+function showWelcomeRestore(){
+  const box=document.querySelector('#welcome-modal > div');if(!box)return;
+  box.innerHTML=`<div style="font-size:36px;">🔑</div>
+    <div style="color:#3a2a4a;font-size:16px;font-weight:900;margin-top:8px;">IDで引き継ぐ</div>
+    <div style="color:#90a890;font-size:11px;margin-top:4px;">以前のIDを入力してください</div>
+    <input id="restore-inp" placeholder="xxxxxxxx-xxxx-xxxx-xxxx" style="width:100%;margin-top:12px;padding:10px 12px;border:1.5px solid #a0d0f0;border-radius:12px;font-size:11px;font-family:monospace;outline:none;background:#f8f8ff;color:#3060a0;">
+    <div id="restore-err" style="color:#e04040;font-size:11px;margin-top:6px;display:none;">IDが見つかりませんでした</div>
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+      <button onclick="doRestore()" style="width:100%;padding:12px;background:linear-gradient(135deg,#4090ff,#2060d0);border:none;color:#fff;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;">復元する</button>
+      <button onclick="startFresh()" style="width:100%;padding:10px;background:#f0f0f0;border:none;color:#909090;border-radius:12px;font-size:12px;cursor:pointer;">新規ではじめる</button>
+    </div>`;
+}
+
+function startFresh(){
+  getUID();
+  document.getElementById('welcome-modal')?.remove();
+  cloudSave(state);
+  showNewUserIdNotice();
+}
+
+function showNewUserIdNotice(){
+  const uid=getUID();
+  const bg=document.createElement('div');bg.className='modal-bg';
+  bg.innerHTML=`<div style="text-align:center;padding:28px;background:#fff;border:3px solid #50c080;border-radius:28px;max-width:300px;width:100%;animation:popIn .4s ease;">
+    <div style="font-size:36px;">🔑</div>
+    <div style="color:#3a2a4a;font-size:16px;font-weight:900;margin-top:8px;">あなたのID</div>
+    <div style="color:#90a890;font-size:11px;margin-top:4px;">このIDを保存しておくと<br>どの端末でもデータを引き継げます</div>
+    <div onclick="copyUID()" style="margin:12px 0;padding:12px;background:#f0f8ff;border:1.5px solid #80b0e0;border-radius:12px;font-size:10px;font-family:monospace;color:#4060a0;word-break:break-all;cursor:pointer;">${uid}<br><span style="font-size:9px;color:#90b0d0;">タップでコピー</span></div>
+    <div style="color:#e07020;font-size:11px;font-weight:700;">⚠️ スクリーンショットで保存推奨</div>
+    <button onclick="this.closest('.modal-bg').remove();render();" style="margin-top:14px;width:100%;padding:11px;background:linear-gradient(135deg,#50c080,#30a060);border:none;color:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;">OK、保存した！</button>
+  </div>`;
+  document.body.appendChild(bg);
+}
+
+async function boot(){
+  const hasLocal=!!localStorage.getItem('hq_v5');
+  const storedUid=localStorage.getItem(UID_KEY);
+
+  if(hasLocal){
+    if(!storedUid)getUID();
+    render();
+    cloudSave(state); // バックグラウンドで同期
+    return;
+  }
+
+  if(storedUid){
+    // localStorageが消えたがUIDは残っている → 自動復元
+    const overlay=document.createElement('div');overlay.id='boot-overlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:#f0fff0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    overlay.innerHTML='<div style="font-size:48px;animation:moodBounce 1s ease-in-out infinite;">🌟</div><div style="color:#70a890;font-size:14px;font-weight:700;">データを復元中...</div>';
+    document.body.appendChild(overlay);
+    const cloudData=await cloudLoad(storedUid);
+    overlay.remove();
+    if(cloudData){
+      localStorage.setItem('hq_v5',JSON.stringify(cloudData));
+      location.reload();return;
+    }
+  }
+
+  // 新規 or 復元不可 → ウェルカムモーダル
+  showWelcomeModal();
+  render();
+}
+
+boot();
 </script>
 </body>
 </html>
